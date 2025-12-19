@@ -1,0 +1,6 @@
+@CMAnGOS_CMS_API.Server_HostAddress = http://localhost:5023
+
+GET {{CMAnGOS_CMS_API.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

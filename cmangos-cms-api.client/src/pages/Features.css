@@ -1,0 +1,176 @@
+.features-page {
+  color: #b89968;
+}
+
+.page-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  color: #d4a234;
+  text-align: center;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.page-intro {
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #9a8866;
+  margin-bottom: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.feature-card {
+  background: rgba(20, 10, 5, 0.6);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.feature-card:hover {
+  border-color: #d4a234;
+  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.3);
+  transform: translateY(-5px);
+}
+
+.feature-card.highlight {
+  border-color: #d4a234;
+  background: rgba(212, 162, 52, 0.05);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 10px rgba(212, 162, 52, 0.5));
+}
+
+.feature-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: #d4a234;
+  text-align: center;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.feature-description {
+  color: #9a8866;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-list li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #b89968;
+  border-bottom: 1px solid rgba(139, 105, 20, 0.2);
+}
+
+.feature-list li:last-child {
+  border-bottom: none;
+}
+
+.feature-list li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: #d4a234;
+  font-weight: 700;
+}
+
+.rates-section {
+  background: rgba(20, 10, 5, 0.6);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  padding: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  color: #d4a234;
+  text-align: center;
+  margin: 0 0 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.rates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+}
+
+.rate-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.rate-card:hover {
+  border-color: #d4a234;
+  transform: scale(1.05);
+}
+
+.rate-card h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: #d4a234;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rate-value {
+  font-family: 'Cinzel', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #d4a234;
+  margin: 0.5rem 0;
+  text-shadow: 0 0 20px rgba(212, 162, 52, 0.5);
+}
+
+.rate-card p {
+  color: #9a8866;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

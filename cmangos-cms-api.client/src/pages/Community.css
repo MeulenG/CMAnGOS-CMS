@@ -1,0 +1,428 @@
+.community-page {
+  color: #b89968;
+}
+
+.page-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  color: #d4a234;
+  text-align: center;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.page-intro {
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #9a8866;
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  color: #d4a234;
+  text-align: center;
+  margin: 0 0 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.section-description {
+  text-align: center;
+  color: #9a8866;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+.community-platforms {
+  margin-bottom: 3rem;
+}
+
+.platforms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.platform-card {
+  background: rgba(20, 10, 5, 0.6);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.platform-card.featured {
+  border-color: #d4a234;
+  background: rgba(212, 162, 52, 0.05);
+}
+
+.platform-card:hover {
+  border-color: #d4a234;
+  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.3);
+  transform: translateY(-5px);
+}
+
+.platform-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 10px rgba(212, 162, 52, 0.5));
+}
+
+.platform-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  color: #d4a234;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.platform-description {
+  color: #9a8866;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.platform-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid #8b6914;
+  border-bottom: 1px solid #8b6914;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #d4a234;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #7a6850;
+  text-transform: uppercase;
+}
+
+.platform-btn {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(180deg, #d4a234 0%, #8b6914 100%);
+  color: #1a0e08;
+  border: 2px solid #d4a234;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(212, 162, 52, 0.4);
+}
+
+.platform-btn:hover {
+  background: linear-gradient(180deg, #ffd700 0%, #d4a234 100%);
+  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.6);
+  transform: translateY(-2px);
+}
+
+.guild-finder {
+  margin-bottom: 3rem;
+}
+
+.guilds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.guild-card {
+  background: rgba(20, 10, 5, 0.6);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.guild-card:hover {
+  border-color: #d4a234;
+  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.3);
+  transform: translateY(-5px);
+}
+
+.guild-header {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #8b6914;
+}
+
+.guild-card.alliance .guild-header {
+  background: linear-gradient(135deg, rgba(0, 80, 180, 0.4) 0%, rgba(0, 50, 120, 0.4) 100%);
+}
+
+.guild-card.horde .guild-header {
+  background: linear-gradient(135deg, rgba(180, 20, 20, 0.4) 0%, rgba(120, 10, 10, 0.4) 100%);
+}
+
+.guild-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1.2rem;
+  color: #d4a234;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guild-faction {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.guild-card.alliance .guild-faction {
+  background: rgba(0, 80, 180, 0.6);
+  color: #9ac4ff;
+}
+
+.guild-card.horde .guild-faction {
+  background: rgba(180, 20, 20, 0.6);
+  color: #ff9494;
+}
+
+.guild-body {
+  padding: 1.5rem;
+}
+
+.guild-focus {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: #b89968;
+  text-align: center;
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.guild-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #8b6914;
+}
+
+.guild-details .detail {
+  font-size: 0.85rem;
+  color: #9a8866;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 3px;
+}
+
+.guild-description {
+  color: #9a8866;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.contact-btn {
+  width: 100%;
+  padding: 0.8rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(20, 10, 5, 0.8);
+  color: #d4a234;
+  border: 2px solid #d4a234;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+  background: linear-gradient(180deg, #d4a234 0%, #8b6914 100%);
+  color: #1a0e08;
+  box-shadow: 0 4px 15px rgba(212, 162, 52, 0.4);
+}
+
+.events-section {
+  margin-bottom: 3rem;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.event-card {
+  background: rgba(20, 10, 5, 0.6);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.event-card:hover {
+  border-color: #d4a234;
+  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.3);
+  transform: translateX(5px);
+}
+
+.event-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  background: linear-gradient(135deg, #d4a234, #8b6914);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.event-day {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a0e08;
+  line-height: 1;
+}
+
+.event-month {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  color: #1a0e08;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.event-info {
+  flex: 1;
+}
+
+.event-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: #d4a234;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.event-description {
+  color: #9a8866;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #b89968;
+}
+
+.community-guidelines {
+  margin-bottom: 2rem;
+}
+
+.guidelines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.guideline-card {
+  background: rgba(20, 10, 5, 0.6);
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.guideline-card:hover {
+  border-color: #d4a234;
+  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.3);
+}
+
+.guideline-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.guideline-card h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.2rem;
+  color: #d4a234;
+  margin: 0 0 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guideline-card p {
+  color: #9a8866;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .platforms-grid,
+  .guilds-grid,
+  .guidelines-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-card {
+    flex-direction: column;
+  }
+
+  .event-date {
+    width: 100%;
+  }
+
+  .event-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import './Access.css';
 
@@ -41,7 +42,7 @@ const Access: React.FC = () => {
                 <li>Choose a secure password</li>
                 <li>Verify your email address</li>
               </ul>
-              <a href="/account" className="action-btn">Go to Sign Up</a>
+              <Link to="/account" className="action-btn">Go to Sign Up</Link>
             </div>
           </div>
 
@@ -77,7 +78,7 @@ const Access: React.FC = () => {
                 <li>Select realm: CMAnGOS Classic</li>
               </ul>
               <p className="step-note">
-                Having trouble? Check our <a href="/support">Support page</a> for help.
+                Having trouble? Check our <Link to="/support">Support page</Link> for help.
               </p>
             </div>
           </div>

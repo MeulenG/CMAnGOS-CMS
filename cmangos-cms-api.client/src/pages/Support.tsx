@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import './Support.css';
 
@@ -61,7 +62,7 @@ const Support: React.FC = () => {
               <details className="faq-item">
                 <summary className="faq-question">How do I create an account?</summary>
                 <div className="faq-answer">
-                  Visit our <a href="/account">Account page</a> and click on the Sign Up tab. 
+                  Visit our <Link to="/account">Account page</Link> and click on the Sign Up tab. 
                   Fill out the registration form with your desired username, email, and password. 
                   You'll receive a confirmation email to verify your account.
                 </div>
@@ -94,8 +95,8 @@ const Support: React.FC = () => {
                 <div className="faq-answer">
                   First, verify your realmlist is correct (set realmlist login.cmangos-server.com). 
                   Check that you're using client version 1.12.1. Disable your firewall temporarily 
-                  to see if it's blocking the connection. If issues persist, visit our 
-                  <a href="/access">How to Access</a> page for detailed troubleshooting.
+                  to see if it's blocking the connection. If issues persist, visit our{' '}
+                  <Link to="/access">How to Access</Link> page for detailed troubleshooting.
                 </div>
               </details>
 

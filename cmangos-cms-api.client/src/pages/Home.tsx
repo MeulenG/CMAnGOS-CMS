@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import './Home.css';
 
@@ -10,8 +11,8 @@ const Home: React.FC = () => {
           <h1 className="hero-title">Journey to Azeroth</h1>
           <p className="hero-subtitle">Experience Classic World of Warcraft Like Never Before</p>
           <div className="hero-buttons">
-            <a href="/account" className="btn-primary">Create Account</a>
-            <a href="/access" className="btn-secondary">How to Connect</a>
+            <Link to="/account" className="btn-primary">Create Account</Link>
+            <Link to="/access" className="btn-secondary">How to Connect</Link>
           </div>
         </div>
       </div>

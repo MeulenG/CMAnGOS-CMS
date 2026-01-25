@@ -66,14 +66,14 @@
 .content-title {
   font-family: 'Cinzel', serif;
   font-size: 2rem;
-  color: #d4a234;
+  color: #2d1f14;
   margin: 0 0 1rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .content-description {
-  color: #9a8866;
+  color: #2d1f14;
   line-height: 1.6;
   margin-bottom: 2rem;
   font-size: 1.05rem;
@@ -91,7 +91,7 @@
 .form-group label {
   display: block;
   font-family: 'Cinzel', serif;
-  color: #d4a234;
+  color: #000000;
   margin-bottom: 0.5rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -104,10 +104,10 @@
 .form-group input[type="password"] {
   width: 100%;
   padding: 0.8rem;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.7);
   border: 2px solid #8b6914;
   border-radius: 4px;
-  color: #b89968;
+  color: #ffffff;
   font-size: 1rem;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -140,6 +140,7 @@
   text-transform: none;
   font-weight: normal;
   font-size: 0.95rem;
+  color: #000000;
 }
 
 .submit-btn {
@@ -192,14 +193,19 @@
   flex: 1;
   min-width: 150px;
   padding: 0.8rem;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.7);
   border: 2px solid #8b6914;
   border-radius: 4px;
-  color: #b89968;
+  color: #ffffff;
   font-family: 'Cinzel', serif;
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.filter-select option {
+  background: #1a0e08;
+  color: #ffffff;
 }
 
 .filter-select:focus {

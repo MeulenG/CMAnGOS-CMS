@@ -64,7 +64,7 @@
 .hero-subtitle {
   font-family: 'Cinzel', serif;
   font-size: 1.5rem;
-  color: #b89968;
+  color: #f3e8c6M;
   margin: 0 0 2rem;
   letter-spacing: 0.08em;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
@@ -136,7 +136,7 @@
   text-align: center;
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #b89968;
+  color: #000000;
   max-width: 800px;
   margin: 0 auto 2rem;
 }

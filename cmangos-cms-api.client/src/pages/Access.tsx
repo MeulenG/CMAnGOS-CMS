@@ -14,24 +14,9 @@ const Access: React.FC = () => {
         </p>
 
         <section className="step-section">
-          <div className="step-card">
-            <div className="step-number">1</div>
-            <h2 className="step-title">Download the Client</h2>
-            <p className="step-description">
-              You'll need the World of Warcraft Classic 1.12.1 client. We recommend the English version for best compatibility.
-            </p>
-            <div className="step-details">
-              <ul>
-                <li>Required Version: 1.12.1 (5875)</li>
-                <li>File Size: Approximately 4.5 GB</li>
-                <li>Languages: English, German, French supported</li>
-              </ul>
-              <button className="action-btn">Download Client</button>
-            </div>
-          </div>
 
           <div className="step-card">
-            <div className="step-number">2</div>
+            <div className="step-number">1</div>
             <h2 className="step-title">Create an Account</h2>
             <p className="step-description">
               Register your account on our website. This will be your login credentials for the game.
@@ -47,10 +32,10 @@ const Access: React.FC = () => {
           </div>
 
           <div className="step-card">
-            <div className="step-number">3</div>
+            <div className="step-number">2</div>
             <h2 className="step-title">Configure Connection</h2>
             <p className="step-description">
-              Modify your realmlist file to connect to our server. This tells your client where to find us.
+              Modify your realmlist file to connect to our server.
             </p>
             <div className="step-details">
               <div className="code-box">
@@ -66,7 +51,7 @@ const Access: React.FC = () => {
           </div>
 
           <div className="step-card">
-            <div className="step-number">4</div>
+            <div className="step-number">3</div>
             <h2 className="step-title">Launch and Play</h2>
             <p className="step-description">
               Start WoW.exe and login with your account credentials. Welcome to Azeroth!
@@ -92,12 +77,6 @@ const Access: React.FC = () => {
               <p className="faq-answer">
                 Verify your realmlist is correct and that your firewall isn't blocking the connection. 
                 Try temporarily disabling antivirus software.
-              </p>
-            </div>
-            <div className="faq-item">
-              <h3 className="faq-question">Wrong Client Version?</h3>
-              <p className="faq-answer">
-                Ensure you have version 1.12.1 (5875). Check the login screen - it should display this version number.
               </p>
             </div>
             <div className="faq-item">

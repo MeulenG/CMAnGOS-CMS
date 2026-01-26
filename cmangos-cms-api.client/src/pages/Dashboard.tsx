@@ -106,7 +106,7 @@ const Dashboard = () => {
     {
       id: 2,
       character: { id: 8, name: 'Bloodfury', level: 58, race: 'Orc', class: 'Warrior', faction: 'horde' },
-      tradedWith: { id: 9, name: 'Frostmourne', level: 60, race: 'Human', class: 'Death Knight', faction: 'alliance' },
+      tradedWith: { id: 9, name: 'Frostmourne', level: 60, race: 'Human', class: 'Paladin', faction: 'alliance' },
       tradeDate: '2025-12-28'
     },
   ];

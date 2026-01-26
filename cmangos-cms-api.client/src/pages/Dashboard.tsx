@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import './Dashboard.css';
 
@@ -36,95 +36,85 @@ interface Trade {
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<'characters' | 'marketplace' | 'bids' | 'trades'>('characters');
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [marketplaceCharacters, setMarketplaceCharacters] = useState<MarketplaceCharacter[]>([]);
-  const [bids, setBids] = useState<Bid[]>([]);
-  const [trades, setTrades] = useState<Trade[]>([]);
+  // Mock data - will be replaced with actual API call
+  // For actual implementation: fetch('/api/Account/{userId}/characters')
+  const mockCharactersData: Character[] = [
+    { id: 1, name: 'Thunderstrike', level: 60, race: 'Human', class: 'Warrior', faction: 'alliance' },
+    { id: 2, name: 'Shadowmend', level: 58, race: 'Night Elf', class: 'Priest', faction: 'alliance' },
+    { id: 3, name: 'Frostblade', level: 55, race: 'Undead', class: 'Mage', faction: 'horde' },
+  ];
 
-  // Fetch user's characters from Account Controller
-  useEffect(() => {
-    // Mock data for now - will be replaced with actual API call
-    // For actual implementation: fetch('/api/Account/{userId}/characters')
-    const mockCharacters: Character[] = [
-      { id: 1, name: 'Thunderstrike', level: 60, race: 'Human', class: 'Warrior', faction: 'alliance' },
-      { id: 2, name: 'Shadowmend', level: 58, race: 'Night Elf', class: 'Priest', faction: 'alliance' },
-      { id: 3, name: 'Frostblade', level: 55, race: 'Undead', class: 'Mage', faction: 'horde' },
-    ];
-    setCharacters(mockCharacters);
+  const mockMarketplaceData: MarketplaceCharacter[] = [
+    { 
+      id: 4, 
+      name: 'Battlemaster', 
+      level: 60, 
+      race: 'Human', 
+      class: 'Paladin', 
+      faction: 'alliance',
+      price: 2500,
+      status: 'listed',
+      listedDate: '2026-01-20'
+    },
+    { 
+      id: 5, 
+      name: 'Darkspell', 
+      level: 60, 
+      race: 'Undead', 
+      class: 'Warlock', 
+      faction: 'horde',
+      price: 1800,
+      status: 'sold',
+      listedDate: '2026-01-15'
+    },
+  ];
 
-    // Mock marketplace characters
-    const mockMarketplace: MarketplaceCharacter[] = [
-      { 
-        id: 4, 
-        name: 'Battlemaster', 
-        level: 60, 
-        race: 'Human', 
-        class: 'Paladin', 
-        faction: 'alliance',
-        price: 2500,
-        status: 'listed',
-        listedDate: '2026-01-20'
-      },
-      { 
-        id: 5, 
-        name: 'Darkspell', 
-        level: 60, 
-        race: 'Undead', 
-        class: 'Warlock', 
-        faction: 'horde',
-        price: 1800,
-        status: 'sold',
-        listedDate: '2026-01-15'
-      },
-    ];
-    setMarketplaceCharacters(mockMarketplace);
+  const mockBidsData: Bid[] = [
+    {
+      id: 1,
+      character: mockMarketplaceData[0],
+      bidAmount: 2700,
+      timestamp: '2026-01-25T14:30:00Z',
+      status: 'active',
+      bidderName: 'PlayerOne'
+    },
+    {
+      id: 2,
+      character: mockMarketplaceData[0],
+      bidAmount: 2600,
+      timestamp: '2026-01-24T10:15:00Z',
+      status: 'active',
+      bidderName: 'PlayerTwo'
+    },
+    {
+      id: 3,
+      character: mockMarketplaceData[1],
+      bidAmount: 1900,
+      timestamp: '2026-01-22T16:45:00Z',
+      status: 'closed',
+      bidderName: 'PlayerThree'
+    },
+  ];
 
-    // Mock bids
-    const mockBids: Bid[] = [
-      {
-        id: 1,
-        character: mockMarketplace[0],
-        bidAmount: 2700,
-        timestamp: '2026-01-25T14:30:00Z',
-        status: 'active',
-        bidderName: 'PlayerOne'
-      },
-      {
-        id: 2,
-        character: mockMarketplace[0],
-        bidAmount: 2600,
-        timestamp: '2026-01-24T10:15:00Z',
-        status: 'active',
-        bidderName: 'PlayerTwo'
-      },
-      {
-        id: 3,
-        character: mockMarketplace[1],
-        bidAmount: 1900,
-        timestamp: '2026-01-22T16:45:00Z',
-        status: 'closed',
-        bidderName: 'PlayerThree'
-      },
-    ];
-    setBids(mockBids);
+  const mockTradesData: Trade[] = [
+    {
+      id: 1,
+      character: { id: 6, name: 'Ironforge', level: 60, race: 'Dwarf', class: 'Hunter', faction: 'alliance' },
+      tradedWith: { id: 7, name: 'Stormrage', level: 60, race: 'Night Elf', class: 'Druid', faction: 'alliance' },
+      tradeDate: '2026-01-10'
+    },
+    {
+      id: 2,
+      character: { id: 8, name: 'Bloodfury', level: 58, race: 'Orc', class: 'Warrior', faction: 'horde' },
+      tradedWith: { id: 9, name: 'Frostmourne', level: 60, race: 'Human', class: 'Death Knight', faction: 'alliance' },
+      tradeDate: '2025-12-28'
+    },
+  ];
 
-    // Mock trades
-    const mockTrades: Trade[] = [
-      {
-        id: 1,
-        character: { id: 6, name: 'Ironforge', level: 60, race: 'Dwarf', class: 'Hunter', faction: 'alliance' },
-        tradedWith: { id: 7, name: 'Stormrage', level: 60, race: 'Night Elf', class: 'Druid', faction: 'alliance' },
-        tradeDate: '2026-01-10'
-      },
-      {
-        id: 2,
-        character: { id: 8, name: 'Bloodfury', level: 58, race: 'Orc', class: 'Warrior', faction: 'horde' },
-        tradedWith: { id: 9, name: 'Frostmourne', level: 60, race: 'Human', class: 'Death Knight', faction: 'alliance' },
-        tradeDate: '2025-12-28'
-      },
-    ];
-    setTrades(mockTrades);
-  }, []);
+  const [characters] = useState<Character[]>(mockCharactersData);
+  const [marketplaceCharacters] = useState<MarketplaceCharacter[]>(mockMarketplaceData);
+  const [bids] = useState<Bid[]>(mockBidsData);
+  const [trades] = useState<Trade[]>(mockTradesData);
 
   const getCharacterIcon = (race: string, classType: string) => {
     // Return race/class combination as text for now

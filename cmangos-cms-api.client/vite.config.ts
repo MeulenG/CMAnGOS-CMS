@@ -34,7 +34,8 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     }
 }
 
-// @ts-expect-error - target variable is defined but currently unused, kept for future use
+// @ts-expect-error - target variable is defined for future use with proxy configuration
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
     env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7258';
 

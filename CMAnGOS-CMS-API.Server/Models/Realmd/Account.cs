@@ -8,20 +8,15 @@ namespace CMAnGOS_CMS_API.Server.Models.Realmd
     {
         [Key]
         [Column("id")]
-        public uint Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         [Column("username")]
         [StringLength(32)]
         public string Username { get; set; } = string.Empty;
 
-        [Required]
-        [Column("sha_pass_hash")]
-        [StringLength(40)]
-        public string ShaPassHash { get; set; } = string.Empty;
-
         [Column("gmlevel")]
-        public byte GmLevel { get; set; }
+        public int GmLevel { get; set; }
 
         [Column("sessionkey")]
         [StringLength(80)]
@@ -42,33 +37,23 @@ namespace CMAnGOS_CMS_API.Server.Models.Realmd
         [Column("joindate")]
         public DateTime JoinDate { get; set; }
 
-        [Column("last_ip")]
-        [StringLength(15)]
-        public string LastIp { get; set; } = string.Empty;
-
         [Column("failed_logins")]
         public uint FailedLogins { get; set; }
 
         [Column("locked")]
-        public byte Locked { get; set; }
-
-        [Column("last_login")]
-        public DateTime LastLogin { get; set; }
+        public int Locked { get; set; }
 
         [Column("active_realm_id")]
         public uint ActiveRealmId { get; set; }
 
-        [Column("online")]
-        public uint Online { get; set; }
-
         [Column("expansion")]
-        public byte Expansion { get; set; }
+        public int Expansion { get; set; }
 
         [Column("mutetime")]
         public long MuteTime { get; set; }
 
         [Column("locale")]
-        public byte Locale { get; set; }
+        public string? Locale { get; set; }
 
         [Column("os")]
         [StringLength(3)]

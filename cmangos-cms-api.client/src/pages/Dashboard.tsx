@@ -111,10 +111,10 @@ const Dashboard = () => {
     },
   ];
 
-  const [characters] = useState<Character[]>(mockCharactersData);
-  const [marketplaceCharacters] = useState<MarketplaceCharacter[]>(mockMarketplaceData);
-  const [bids] = useState<Bid[]>(mockBidsData);
-  const [trades] = useState<Trade[]>(mockTradesData);
+  const characters = mockCharactersData;
+  const marketplaceCharacters = mockMarketplaceData;
+  const bids = mockBidsData;
+  const trades = mockTradesData;
 
   const getCharacterIcon = (race: string, classType: string) => {
     // Return race/class combination as text for now

@@ -61,6 +61,16 @@ const AdminDashboard: React.FC = () => {
   const handleMuteAccount = async () => {
     if (!selectedAccount) return;
     
+    if (muteMinutes <= 0) {
+      setActionMessage({ type: 'error', text: 'Mute duration must be greater than 0 minutes' });
+      return;
+    }
+    
+    if (muteMinutes > 1440) { // 24 hours max
+      setActionMessage({ type: 'error', text: 'Mute duration cannot exceed 24 hours (1440 minutes)' });
+      return;
+    }
+    
     // Mock API call - TODO: Replace with actual backend endpoint
     // POST /api/account/{id}/mute with duration
     setActionMessage({ type: 'success', text: `Account "${selectedAccount.username}" has been muted for ${muteMinutes} minutes` });
@@ -70,6 +80,11 @@ const AdminDashboard: React.FC = () => {
 
   const handleChangeGMLevel = async () => {
     if (!selectedAccount) return;
+    
+    if (gmLevel < 0 || gmLevel > 5) {
+      setActionMessage({ type: 'error', text: 'GM level must be between 0 and 5' });
+      return;
+    }
     
     // Mock API call - TODO: Replace with actual backend endpoint
     // PUT /api/account/{id}/gmlevel
@@ -81,8 +96,13 @@ const AdminDashboard: React.FC = () => {
   const handleChangePassword = async () => {
     if (!selectedAccount) return;
     
-    if (!newPassword || newPassword.length < 4) {
-      setActionMessage({ type: 'error', text: 'Password must be at least 4 characters' });
+    if (!newPassword || newPassword.length < 8) {
+      setActionMessage({ type: 'error', text: 'Password must be at least 8 characters' });
+      return;
+    }
+    
+    if (newPassword.length > 16) {
+      setActionMessage({ type: 'error', text: 'Password must not exceed 16 characters' });
       return;
     }
     
@@ -98,6 +118,17 @@ const AdminDashboard: React.FC = () => {
     
     if (!newUsername || newUsername.length < 3) {
       setActionMessage({ type: 'error', text: 'Username must be at least 3 characters' });
+      return;
+    }
+    
+    if (newUsername.length > 16) {
+      setActionMessage({ type: 'error', text: 'Username must not exceed 16 characters' });
+      return;
+    }
+    
+    // Validate username format (alphanumeric only)
+    if (!/^[a-zA-Z0-9]+$/.test(newUsername)) {
+      setActionMessage({ type: 'error', text: 'Username must contain only letters and numbers' });
       return;
     }
     

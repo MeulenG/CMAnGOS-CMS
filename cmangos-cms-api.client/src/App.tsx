@@ -1,9 +1,8 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Account from './pages/Account';
+import Dashboard from './pages/Dashboard';
 import Access from './pages/Access';
 import Features from './pages/Features';
 import Support from './pages/Support';
@@ -18,7 +17,7 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/account" element={<Account />} />
+            <Route path="/account" element={<Dashboard />} />
             <Route path="/access" element={<Access />} />
             <Route path="/features" element={<Features />} />
             <Route path="/support" element={<Support />} />

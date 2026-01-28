@@ -14,12 +14,11 @@ const Header: React.FC = () => {
       <nav className="main-nav">
         <ul className="nav-list">
           <li><Link to="/">Home</Link></li>
-          <li><Link to="/account">Account & Signup</Link></li>
           <li><Link to="/access">How to Access</Link></li>
           <li><Link to="/features">Server Features</Link></li>
           <li><Link to="/support">Support</Link></li>
           <li><Link to="/community">Community</Link></li>
-          <li><Link to="/dashboard">My Account</Link></li>
+          <li><Link to="/account">My Account</Link></li>
         </ul>
       </nav>
     </header>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import './Dashboard.css';
+import './Account.css';
 
 // Type definitions
 interface Character {
@@ -35,6 +36,10 @@ interface Trade {
 }
 
 const Dashboard = () => {
+  // TODO: Replace with actual authentication check
+  // For now, set to false to show login/signup by default
+  const [isLoggedIn] = useState(false);
+  const [authTab, setAuthTab] = useState<'login' | 'signup'>('login');
   const [activeTab, setActiveTab] = useState<'characters' | 'marketplace' | 'bids' | 'trades'>('characters');
   
   // Mock data - will be replaced with actual API call
@@ -148,32 +153,123 @@ const Dashboard = () => {
       <div className="dashboard-page">
         <h1 className="page-title">My Account</h1>
 
-        <div className="dashboard-tabs">
-          <button 
-            className={`tab-button ${activeTab === 'characters' ? 'active' : ''}`}
-            onClick={() => setActiveTab('characters')}
-          >
-            My Characters
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'marketplace' ? 'active' : ''}`}
-            onClick={() => setActiveTab('marketplace')}
-          >
-            Marketplace Listings
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'bids' ? 'active' : ''}`}
-            onClick={() => setActiveTab('bids')}
-          >
-            Bids
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'trades' ? 'active' : ''}`}
-            onClick={() => setActiveTab('trades')}
-          >
-            Trade History
-          </button>
-        </div>
+        {!isLoggedIn ? (
+          // Show Login/Signup when user is not logged in
+          <>
+            <div className="account-tabs">
+              <button 
+                className={`tab-button ${authTab === 'login' ? 'active' : ''}`}
+                onClick={() => setAuthTab('login')}
+              >
+                Login
+              </button>
+              <button 
+                className={`tab-button ${authTab === 'signup' ? 'active' : ''}`}
+                onClick={() => setAuthTab('signup')}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            {authTab === 'login' && (
+              <div className="tab-content">
+                <h2 className="content-title">Login to Your Account</h2>
+                <p className="content-description">
+                  Welcome back, adventurer! Login to manage your characters and account settings.
+                </p>
+                
+                <form className="account-form">
+                  <div className="form-group">
+                    <label htmlFor="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Enter your username" />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" />
+                  </div>
+                  
+                  <div className="form-group checkbox-group">
+                    <input type="checkbox" id="remember" />
+                    <label htmlFor="remember">Remember me</label>
+                  </div>
+                  
+                  <button type="submit" className="submit-btn">Login</button>
+                  
+                  <div className="form-links">
+                    <a href="#">Forgot Password?</a>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {authTab === 'signup' && (
+              <div className="tab-content">
+                <h2 className="content-title">Create Your Account</h2>
+                <p className="content-description">
+                  Join thousands of adventurers in our Classic WoW realm. Create your account to begin your journey!
+                </p>
+                
+                <form className="account-form">
+                  <div className="form-group">
+                    <label htmlFor="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Confirm your password" />
+                  </div>
+                  
+                  <div className="form-group checkbox-group">
+                    <input type="checkbox" id="terms" />
+                    <label htmlFor="terms">I agree to the Terms of Service and Server Rules</label>
+                  </div>
+                  
+                  <button type="submit" className="submit-btn">Create Account</button>
+                </form>
+              </div>
+            )}
+          </>
+        ) : (
+          // Show Account Dashboard when user is logged in
+          <>
+            <div className="dashboard-tabs">
+              <button 
+                className={`tab-button ${activeTab === 'characters' ? 'active' : ''}`}
+                onClick={() => setActiveTab('characters')}
+              >
+                My Characters
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'marketplace' ? 'active' : ''}`}
+                onClick={() => setActiveTab('marketplace')}
+              >
+                Marketplace Listings
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'bids' ? 'active' : ''}`}
+                onClick={() => setActiveTab('bids')}
+              >
+                Bids
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'trades' ? 'active' : ''}`}
+                onClick={() => setActiveTab('trades')}
+              >
+                Trade History
+              </button>
+            </div>
 
         {activeTab === 'characters' && (
           <div className="tab-content">
@@ -376,6 +472,8 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </PageContainer>

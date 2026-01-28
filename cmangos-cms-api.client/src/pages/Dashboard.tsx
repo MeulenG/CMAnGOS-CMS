@@ -36,8 +36,13 @@ interface Trade {
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<'characters' | 'marketplace' | 'bids' | 'trades'>('characters');
+  
   // Mock data - will be replaced with actual API call
-  // For actual implementation: fetch('/api/Account/{userId}/characters')
+  // Backend Integration:
+  // 1. Query username from 'realmd' database, 'account' table (usernames are unique)
+  // 2. Get account ID from that table
+  // 3. Query 'classiccharacters' database, 'characters' table using account ID
+  // 4. Fetch all characters for that account
   const mockCharactersData: Character[] = [
     { id: 1, name: 'Thunderstrike', level: 60, race: 'Human', class: 'Warrior', faction: 'alliance' },
     { id: 2, name: 'Shadowmend', level: 58, race: 'Night Elf', class: 'Priest', faction: 'alliance' },
@@ -141,7 +146,7 @@ const Dashboard = () => {
   return (
     <PageContainer>
       <div className="dashboard-page">
-        <h1 className="page-title">My Dashboard</h1>
+        <h1 className="page-title">My Account</h1>
 
         <div className="dashboard-tabs">
           <button 

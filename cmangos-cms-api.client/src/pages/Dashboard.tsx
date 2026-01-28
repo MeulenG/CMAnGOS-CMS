@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import './Dashboard.css';
-import './Account.css';
 
 // Type definitions
 interface Character {

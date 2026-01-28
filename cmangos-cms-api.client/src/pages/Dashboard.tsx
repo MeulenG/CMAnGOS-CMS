@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import './Dashboard.css';
+import './Account.css';
 
 // Type definitions
 interface Character {
@@ -34,7 +35,7 @@ interface Trade {
   tradeDate: string;
 }
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   // TODO: Replace with actual authentication check
   // For now, set to false to show login/signup by default
   const [isLoggedIn] = useState(false);
@@ -108,14 +109,14 @@ const Dashboard = () => {
   const mockTradesData: Trade[] = [
     {
       id: 1,
-      character: { id: 6, name: 'Ironforge', level: 60, race: 'Dwarf', class: 'Hunter', faction: 'alliance' },
+      character: { id: 6, name: 'Ironbeard', level: 60, race: 'Dwarf', class: 'Hunter', faction: 'alliance' },
       tradedWith: { id: 7, name: 'Stormrage', level: 60, race: 'Night Elf', class: 'Druid', faction: 'alliance' },
       tradeDate: '2026-01-10'
     },
     {
       id: 2,
       character: { id: 8, name: 'Bloodfury', level: 58, race: 'Orc', class: 'Warrior', faction: 'horde' },
-      tradedWith: { id: 9, name: 'Frostmourne', level: 60, race: 'Human', class: 'Paladin', faction: 'alliance' },
+      tradedWith: { id: 9, name: 'Dawnblade', level: 60, race: 'Human', class: 'Paladin', faction: 'alliance' },
       tradeDate: '2025-12-28'
     },
   ];

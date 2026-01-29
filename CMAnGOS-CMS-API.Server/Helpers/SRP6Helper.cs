@@ -1,105 +1,104 @@
+using System.Globalization;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CMAnGOS_CMS_API.Server.Helpers
+public class SRP6Helper
 {
-    public class SRP6Helper
+    private static readonly BigInteger N =
+        new BigInteger(HexToBytes("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"),
+                       isUnsigned: true, isBigEndian: true);
+
+    private static readonly BigInteger g = new BigInteger(7);
+
+    private const int SALT_BYTES = 32;
+
+    public byte[] Salt { get; private set; } = new byte[SALT_BYTES];
+    public byte[] Verifier { get; private set; } = Array.Empty<byte>();
+
+    public void CalculateVerifier(string username, string password)
     {
-        private static readonly BigInteger N = BigInteger.Parse(
-            "894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7",
-            System.Globalization.NumberStyles.HexNumber);
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(Salt);
 
-        private static readonly BigInteger g = new BigInteger(7);
+        var shaPassHash = CalculateShaPassHash(username, password);
+        CalculateVerifierFromHash(shaPassHash);
+    }
 
-        public byte[] Salt { get; private set; }
-        public byte[] Verifier { get; private set; }
-
-        public SRP6Helper()
-        {
-            Salt = new byte[32];
-            Verifier = Array.Empty<byte>();
+    public void CalculateVerifierFromHash(string shaPassHashHex)
+    {
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(Salt);
+        byte[] credentialsHash = HexToBytes(shaPassHashHex);
+        if (credentialsHash.Length != 20) { 
+            throw new ArgumentException("Hash must be 20 bytes (SHA1)");
         }
 
-        public void CalculateVerifier(string shaPassHash)
+        byte[] saltLE = (byte[])Salt.Clone();
+        Array.Reverse(saltLE);
+
+        byte[] xBytes;
+        using (var sha1 = SHA1.Create())
         {
-            // Generate random salt
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(Salt);
-            }
-
-            byte[] credentials = HexStringToByteArray(shaPassHash);
-
-            byte[] xBytes = HashWithSalt(Salt, credentials);
-            
-            byte[] xBytesReversed = xBytes.Reverse().ToArray();
-            byte[] xBytesUnsigned = new byte[xBytesReversed.Length + 1];
-            Buffer.BlockCopy(xBytesReversed, 0, xBytesUnsigned, 0, xBytesReversed.Length);
-            xBytesUnsigned[xBytesUnsigned.Length - 1] = 0x00;
-            
-            BigInteger x = new BigInteger(xBytesUnsigned);
-
-            BigInteger v = BigInteger.ModPow(g, x, N);
-
-            Verifier = ToByteArray(v, 32);
+            sha1.TransformBlock(saltLE, 0, saltLE.Length, null, 0);
+            sha1.TransformFinalBlock(credentialsHash, 0, credentialsHash.Length);
+            xBytes = sha1.Hash!;
         }
 
-        public string GetSaltHex()
-        {
-            return ByteArrayToHexString(Salt.Reverse().ToArray());
-        }
+        BigInteger x = new BigInteger(xBytes, isUnsigned: true, isBigEndian: false);
 
-        public string GetVerifierHex()
-        {
-            return ByteArrayToHexString(Verifier.Reverse().ToArray());
-        }
+        BigInteger v = BigInteger.ModPow(g, x, N);
 
-        private byte[] HashWithSalt(byte[] salt, byte[] credentials)
-        {
-            using (var sha1 = SHA1.Create())
-            {
-                byte[] combined = new byte[salt.Length + credentials.Length];
-                Buffer.BlockCopy(salt, 0, combined, 0, salt.Length);
-                Buffer.BlockCopy(credentials, 0, combined, salt.Length, credentials.Length);
-                return sha1.ComputeHash(combined);
-            }
-        }
+        Verifier = ToBigEndianFixed(v, 32);
+    }
 
-        private byte[] ToByteArray(BigInteger value, int length)
-        {
-            byte[] bytes = value.ToByteArray();
-            
-            if (bytes.Length == length)
-                return bytes;
+    public static string CalculateShaPassHash(string username, string password)
+    {
+        string u = username.ToUpperInvariant();
+        string p = password.ToUpperInvariant();
 
-            byte[] result = new byte[length];
-            if (bytes.Length < length)
-            {
-                Buffer.BlockCopy(bytes, 0, result, 0, bytes.Length);
-            }
-            else
-            {
-                Buffer.BlockCopy(bytes, 0, result, 0, length);
-            }
-            
-            return result;
-        }
+        using var sha1 = SHA1.Create();
+        byte[] hash = sha1.ComputeHash(Encoding.UTF8.GetBytes($"{u}:{p}"));
+        return BytesToHex(hash);
+    }
 
-        private byte[] HexStringToByteArray(string hex)
-        {
-            int length = hex.Length;
-            byte[] bytes = new byte[length / 2];
-            for (int i = 0; i < length; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-            return bytes;
-        }
+    public string GetSaltHex() => BytesToHex(Salt);
+    public string GetVerifierHex() => BytesToHex(Verifier);
 
-        private string ByteArrayToHexString(byte[] bytes)
+    private static byte[] ToBigEndianFixed(BigInteger value, int length)
+    {
+        byte[] bytes = value.ToByteArray(isUnsigned: true, isBigEndian: true);
+
+        if (bytes.Length == length) return bytes;
+
+        byte[] result = new byte[length];
+        if (bytes.Length > length)
         {
-            return BitConverter.ToString(bytes).Replace("-", string.Empty);
+            Buffer.BlockCopy(bytes, bytes.Length - length, result, 0, length);
         }
+        else
+        {
+            Buffer.BlockCopy(bytes, 0, result, length - bytes.Length, bytes.Length);
+        }
+        return result;
+    }
+
+    private static byte[] HexToBytes(string hex)
+    {
+        byte[] bytes = new byte[hex.Length / 2];
+        for (int i = 0; i < bytes.Length; i++) { 
+            bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+        }
+        return bytes;
+    }
+
+    private static string BytesToHex(byte[] bytes)
+    {
+        var sb = new StringBuilder(bytes.Length * 2);
+        foreach (var b in bytes)
+        {
+            sb.Append(b.ToString("X2"));
+        }
+        return sb.ToString();
     }
 }

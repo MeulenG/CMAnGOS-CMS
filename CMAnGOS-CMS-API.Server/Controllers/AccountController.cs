@@ -54,7 +54,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         }
 
         // POST api/Account/create
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
         {
             if (!ModelState.IsValid)
@@ -135,7 +135,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             username = AccountHelper.NormalizeString(username);
             password = AccountHelper.NormalizeString(password);
 
-            // Check if account already exists
             var existingAccount = await _realmdDBContext.Accounts
                 .FirstOrDefaultAsync(a => a.Username == username);
 
@@ -147,7 +146,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             string shaPassHash = AccountHelper.CalculateShaPassHash(username, password);
 
             var srp = new SRP6Helper();
-            srp.CalculateVerifier(shaPassHash);
+            srp.CalculateVerifierFromHash(shaPassHash);
 
             string saltHex = srp.GetSaltHex();
             string verifierHex = srp.GetVerifierHex();

@@ -62,7 +62,7 @@ async function startBackend(): Promise<void> {
     
     if (isDevelopment) {
       // In development, run using dotnet
-      backendProcess = spawn('dotnet', ['run', '--no-build'], {
+      backendProcess = spawn('dotnet', ['run'], {
         cwd: backendPath,
         env: {
           ...process.env,

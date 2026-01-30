@@ -5,17 +5,26 @@
     <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
     <PackageJsonVersion Condition="$(PackageJsonVersion) == ''">0.0.0</PackageJsonVersion>
     <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
+    <PackageJsonMain Condition="$(PackageJsonMain) == ''">dist-electron/main.js</PackageJsonMain>
     <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite</PackageJsonScriptsDev>
-    <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">tsc -b &amp;&amp; vite build</PackageJsonScriptsBuild>
+    <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">tsc -b &amp;&amp; vite build &amp;&amp; tsc -p tsconfig.electron.json</PackageJsonScriptsBuild>
     <PackageJsonScriptsLint Condition="$(PackageJsonScriptsLint) == ''">eslint .</PackageJsonScriptsLint>
     <PackageJsonScriptsPreview Condition="$(PackageJsonScriptsPreview) == ''">vite preview</PackageJsonScriptsPreview>
+    <PackageJsonScriptsElectronDev Condition="$(PackageJsonScriptsElectronDev) == ''">concurrently "npm run dev" "wait-on http://localhost:5173 &amp;&amp; cross-env NODE_ENV=development electron dist-electron/main.js"</PackageJsonScriptsElectronDev>
+    <PackageJsonScriptsElectronBuild Condition="$(PackageJsonScriptsElectronBuild) == ''">npm run build &amp;&amp; electron-builder</PackageJsonScriptsElectronBuild>
+    <PackageJsonScriptsCompileElectron Condition="$(PackageJsonScriptsCompileElectron) == ''">tsc -p tsconfig.electron.json</PackageJsonScriptsCompileElectron>
     <PackageJsonDependenciesReact Condition="$(PackageJsonDependenciesReact) == ''">^19.2.0</PackageJsonDependenciesReact>
     <PackageJsonDependenciesReactDom Condition="$(PackageJsonDependenciesReactDom) == ''">^19.2.0</PackageJsonDependenciesReactDom>
+    <PackageJsonDependenciesReactRouterDom Condition="$(PackageJsonDependenciesReactRouterDom) == ''">^7.12.0</PackageJsonDependenciesReactRouterDom>
     <PackageJsonDevdependenciesEslintJs Condition="$(PackageJsonDevdependenciesEslintJs) == ''">^9.39.1</PackageJsonDevdependenciesEslintJs>
     <PackageJsonDevdependenciesTypesNode Condition="$(PackageJsonDevdependenciesTypesNode) == ''">^24.10.1</PackageJsonDevdependenciesTypesNode>
     <PackageJsonDevdependenciesTypesReact Condition="$(PackageJsonDevdependenciesTypesReact) == ''">^19.2.5</PackageJsonDevdependenciesTypesReact>
     <PackageJsonDevdependenciesTypesReactDom Condition="$(PackageJsonDevdependenciesTypesReactDom) == ''">^19.2.3</PackageJsonDevdependenciesTypesReactDom>
     <PackageJsonDevdependenciesVitejsPluginReact Condition="$(PackageJsonDevdependenciesVitejsPluginReact) == ''">^5.1.1</PackageJsonDevdependenciesVitejsPluginReact>
+    <PackageJsonDevdependenciesConcurrently Condition="$(PackageJsonDevdependenciesConcurrently) == ''">^9.1.2</PackageJsonDevdependenciesConcurrently>
+    <PackageJsonDevdependenciesCrossEnv Condition="$(PackageJsonDevdependenciesCrossEnv) == ''">^7.0.3</PackageJsonDevdependenciesCrossEnv>
+    <PackageJsonDevdependenciesElectron Condition="$(PackageJsonDevdependenciesElectron) == ''">^35.7.5</PackageJsonDevdependenciesElectron>
+    <PackageJsonDevdependenciesElectronBuilder Condition="$(PackageJsonDevdependenciesElectronBuilder) == ''">^26.6.0</PackageJsonDevdependenciesElectronBuilder>
     <PackageJsonDevdependenciesEslint Condition="$(PackageJsonDevdependenciesEslint) == ''">^9.39.1</PackageJsonDevdependenciesEslint>
     <PackageJsonDevdependenciesEslintPluginReactHooks Condition="$(PackageJsonDevdependenciesEslintPluginReactHooks) == ''">^7.0.1</PackageJsonDevdependenciesEslintPluginReactHooks>
     <PackageJsonDevdependenciesEslintPluginReactRefresh Condition="$(PackageJsonDevdependenciesEslintPluginReactRefresh) == ''">^0.4.24</PackageJsonDevdependenciesEslintPluginReactRefresh>
@@ -23,5 +32,6 @@
     <PackageJsonDevdependenciesTypescript Condition="$(PackageJsonDevdependenciesTypescript) == ''">~5.9.3</PackageJsonDevdependenciesTypescript>
     <PackageJsonDevdependenciesTypescriptEslint Condition="$(PackageJsonDevdependenciesTypescriptEslint) == ''">^8.46.4</PackageJsonDevdependenciesTypescriptEslint>
     <PackageJsonDevdependenciesVite Condition="$(PackageJsonDevdependenciesVite) == ''">^7.2.4</PackageJsonDevdependenciesVite>
+    <PackageJsonDevdependenciesWaitOn Condition="$(PackageJsonDevdependenciesWaitOn) == ''">^8.0.3</PackageJsonDevdependenciesWaitOn>
   </PropertyGroup>
 </Project>

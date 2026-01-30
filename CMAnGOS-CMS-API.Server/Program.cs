@@ -4,6 +4,9 @@ using CMAnGOS_CMS_API.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure to listen only on localhost for desktop app
+builder.WebHost.UseUrls("http://localhost:5023");
+
 // Add services to the container.
 
 // Register CMAnGOS detection service
@@ -38,11 +41,11 @@ builder.Services.AddDbContext<MangosContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// Allow cors any origin
+// Allow CORS for localhost (Electron app)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-        builder.AllowAnyOrigin()
+        builder.WithOrigins("http://localhost:5173", "http://localhost:61091")
             .AllowAnyMethod()
             .AllowAnyHeader()
     );
@@ -71,7 +74,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Remove HTTPS redirection for localhost desktop app
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 

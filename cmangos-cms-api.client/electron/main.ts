@@ -125,12 +125,12 @@ async function startBackend(): Promise<void> {
 
 // Stop the backend process
 function stopBackend(): void {
-  if (backendProcess) {
+  if (backendProcess && backendProcess.pid) {
     console.log('Stopping backend process...');
     
     if (process.platform === 'win32') {
       // On Windows, use taskkill to ensure child processes are terminated
-      spawn('taskkill', ['/pid', backendProcess.pid!.toString(), '/f', '/t']);
+      spawn('taskkill', ['/pid', backendProcess.pid.toString(), '/f', '/t']);
     } else {
       // On Unix-like systems, send SIGTERM
       backendProcess.kill('SIGTERM');
@@ -149,8 +149,7 @@ function createWindow(): void {
       preload: join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-    },
-    icon: join(__dirname, '..', 'public', 'vite.svg')
+    }
   });
   
   // Load the app

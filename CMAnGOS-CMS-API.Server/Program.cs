@@ -42,10 +42,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Allow CORS for localhost (Electron app)
+// Using AllowAnyOrigin for local desktop app since renderer may use file:// or custom protocols
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-        builder.WithOrigins("http://localhost:5173", "http://localhost:61091")
+        builder.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader()
     );

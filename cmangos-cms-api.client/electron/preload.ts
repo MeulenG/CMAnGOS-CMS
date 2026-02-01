@@ -16,25 +16,31 @@ const IPC_CHANNELS = {
   PROFILE_GET_ALL: 'profile:get-all',
 } as const;
 
-// Type-safe IPC API
+// Type-safe IPC API with generic result types
+export interface IPCResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 export interface ElectronAPI {
   platform: string;
   version: string;
   
   // Config operations
   config: {
-    get: () => Promise<{ success: boolean; data?: any; error?: string }>;
-    save: (updates: any) => Promise<{ success: boolean; data?: any; error?: string }>;
-    getActiveProfile: () => Promise<{ success: boolean; data?: string | null; error?: string }>;
-    setActiveProfile: (profileId: string | null) => Promise<{ success: boolean; data?: string | null; error?: string }>;
+    get: () => Promise<IPCResult<Record<string, unknown>>>;
+    save: (updates: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
+    getActiveProfile: () => Promise<IPCResult<string | null>>;
+    setActiveProfile: (profileId: string | null) => Promise<IPCResult<string | null>>;
   };
   
   // Profile operations
   profile: {
-    getAll: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
-    create: (profileData: any) => Promise<{ success: boolean; data?: any; error?: string }>;
-    update: (id: string, updates: any) => Promise<{ success: boolean; data?: any; error?: string }>;
-    delete: (id: string) => Promise<{ success: boolean; error?: string }>;
+    getAll: () => Promise<IPCResult<Array<Record<string, unknown>>>>;
+    create: (profileData: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
+    update: (id: string, updates: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
+    delete: (id: string) => Promise<IPCResult<void>>;
   };
 }
 
@@ -47,7 +53,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Config operations
   config: {
     get: () => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_GET),
-    save: (updates: any) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_SAVE, updates),
+    save: (updates: Record<string, unknown>) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_SAVE, updates),
     getActiveProfile: () => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_GET_ACTIVE_PROFILE),
     setActiveProfile: (profileId: string | null) => ipcRenderer.invoke(IPC_CHANNELS.CONFIG_SET_ACTIVE_PROFILE, profileId)
   },
@@ -55,9 +61,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Profile operations
   profile: {
     getAll: () => ipcRenderer.invoke(IPC_CHANNELS.PROFILE_GET_ALL),
-    create: (profileData: any) => 
+    create: (profileData: Record<string, unknown>) => 
       ipcRenderer.invoke(IPC_CHANNELS.PROFILE_CREATE, profileData),
-    update: (id: string, updates: any) => 
+    update: (id: string, updates: Record<string, unknown>) => 
       ipcRenderer.invoke(IPC_CHANNELS.PROFILE_UPDATE, id, updates),
     delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PROFILE_DELETE, id)
   }

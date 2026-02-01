@@ -114,7 +114,7 @@ The `{prefix}` placeholder will be automatically replaced with the detected expa
 
 - **Frontend**: React 19 with TypeScript and Vite
 - **Backend**: ASP.NET Core 8.0 Web API
-- **Desktop**: Electron 34
+- **Desktop**: Electron 35
 - **Database**: MySQL with Pomelo.EntityFrameworkCore
 - **Packaging**: electron-builder
 

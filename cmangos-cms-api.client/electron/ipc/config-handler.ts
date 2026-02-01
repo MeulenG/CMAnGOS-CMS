@@ -1,6 +1,6 @@
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
 import { ConfigService } from '../services/ConfigService.js';
-import { IPC_CHANNELS, AppConfig, AppSettings } from '../types/config.types.js';
+import { IPC_CHANNELS, AppConfig } from '../types/config.types.js';
 
 /**
  * Config IPC Handlers

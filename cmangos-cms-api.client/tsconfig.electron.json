@@ -16,5 +16,8 @@
   },
   "include": [
     "electron/**/*.ts"
+  ],
+  "exclude": [
+    "electron/preload.ts"
   ]
 }

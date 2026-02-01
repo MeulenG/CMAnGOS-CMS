@@ -2,11 +2,13 @@
  * Configuration types for CMAnGOS Desktop Application
  */
 
-export enum Expansion {
-  CLASSIC = 'classic',
-  TBC = 'tbc',
-  WOTLK = 'wotlk'
-}
+export const Expansion = {
+  CLASSIC: 'classic',
+  TBC: 'tbc',
+  WOTLK: 'wotlk'
+} as const;
+
+export type Expansion = typeof Expansion[keyof typeof Expansion];
 
 export const ExpansionLabels: Record<Expansion, string> = {
   [Expansion.CLASSIC]: 'Classic World of Warcraft',

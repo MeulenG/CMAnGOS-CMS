@@ -1,3 +1,33 @@
+/**
+ * DESKTOP APP LAYOUT STYLES
+ * 
+ * Complete styling for CMAnGOS Desktop application
+ * This file contains all shared styles used across desktop views.
+ * 
+ * TABLE OF CONTENTS:
+ * 1. Layout System (app-layout, app-body, app-main)
+ * 2. Top Bar (app-top-bar, draggable region)
+ * 3. Sidebar Navigation (app-sidebar, app-nav)
+ * 4. Profile Switcher (dropdown component)
+ * 5. Content Area (app-content, scrolling)
+ * 6. View Headers (view-title, view-subtitle)
+ * 7. Card System (card, card-title)
+ * 8. Grid Layouts (grid-2, grid-3, responsive)
+ * 9. Button System (btn, btn-primary, btn-secondary, btn-danger)
+ * 10. Form System (form-group, form-input, form-label)
+ * 
+ * COLOR PALETTE:
+ * - Gold: #d4a234 (primary accent)
+ * - Bronze: #b89968 (secondary text)
+ * - Dark: #0a0604 (background)
+ * - Medium Dark: #1a0e08 (overlays)
+ */
+
+/* ============================================================================
+   1. LAYOUT SYSTEM
+   Main application structure with flex layout
+   ============================================================================ */
+
 .app-layout {
   display: flex;
   flex-direction: column;
@@ -8,6 +38,12 @@
     url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.05"/></svg>');
   background-attachment: fixed;
 }
+
+/* ============================================================================
+   2. TOP BAR
+   Draggable title bar with app branding and actions
+   -webkit-app-region: drag enables window dragging on Electron
+   ============================================================================ */
 
 .app-top-bar {
   display: flex;
@@ -169,6 +205,11 @@
   border-radius: 5px;
 }
 
+/* ============================================================================
+   4. PROFILE SWITCHER
+   Dropdown component for switching between server profiles
+   ============================================================================ */
+
 .profile-switcher {
   position: relative;
 }
@@ -273,6 +314,11 @@
   color: #ffd700;
 }
 
+/* ============================================================================
+   5. VIEW HEADERS
+   Title and subtitle for each view
+   ============================================================================ */
+
 .view-header {
   margin-bottom: 2rem;
 }
@@ -292,6 +338,11 @@
   color: #b89968;
   margin: 0;
 }
+
+/* ============================================================================
+   6. CARD SYSTEM
+   Content cards with gradient backgrounds and borders
+   ============================================================================ */
 
 .card {
   background: linear-gradient(180deg, rgba(26, 14, 8, 0.9) 0%, rgba(10, 6, 4, 0.9) 100%);
@@ -314,6 +365,11 @@
   color: #d4a234;
   margin: 0 0 1rem;
 }
+
+/* ============================================================================
+   7. GRID LAYOUTS
+   Responsive grid system for cards and content
+   ============================================================================ */
 
 .grid-2 {
   display: grid;
@@ -343,6 +399,11 @@
     width: 200px;
   }
 }
+
+/* ============================================================================
+   8. BUTTON SYSTEM
+   Reusable button styles with WoW-themed gradients and effects
+   ============================================================================ */
 
 /* Button Styles */
 .btn {
@@ -420,6 +481,11 @@
   gap: 1rem;
   flex-wrap: wrap;
 }
+
+/* ============================================================================
+   9. FORM SYSTEM
+   Form inputs, labels, and validation styles
+   ============================================================================ */
 
 /* Form Styles */
 .form-group {

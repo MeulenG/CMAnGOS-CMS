@@ -98,6 +98,8 @@ async function startBackend(): Promise<void> {
     
     console.log('Starting backend from:', backendPath);
     
+    let backendExited = false;
+    
     if (isDevelopment) {
       backendProcess = spawn('dotnet', ['run'], {
         cwd: backendPath,
@@ -140,16 +142,29 @@ async function startBackend(): Promise<void> {
     
     backendProcess.on('error', (error) => {
       console.error('Failed to start backend:', error);
+      backendExited = true;
       reject(error);
     });
     
     backendProcess.on('exit', (code, signal) => {
       console.log(`Backend process exited with code ${code} and signal ${signal}`);
+      backendExited = true;
       backendProcess = null;
+      
+      // If exit happened during startup with error, reject the promise
+      if (code !== 0 && code !== null) {
+        reject(new Error(`Backend process exited with code ${code} during startup`));
+      }
     });
     
     // Wait for backend to be ready
     waitForBackend().then((ready) => {
+      // Check if backend exited during wait
+      if (backendExited) {
+        reject(new Error('Backend process exited before it was ready'));
+        return;
+      }
+      
       if (ready) {
         console.log('Backend is ready!');
         resolve();
@@ -161,20 +176,96 @@ async function startBackend(): Promise<void> {
 }
 
 // Stop the backend process
-function stopBackend(): void {
-  if (backendProcess && backendProcess.pid) {
-    console.log('Stopping backend process...');
-    
+function stopBackend(): Promise<void> {
+  if (!backendProcess || !backendProcess.pid) {
+    return Promise.resolve();
+  }
+
+  console.log('Stopping backend process...');
+
+  const processToStop: ChildProcess = backendProcess;
+  const pid = processToStop.pid;
+  const timeoutMs = 5000;
+
+  return new Promise((resolve) => {
+    let timeout: NodeJS.Timeout | null = null;
+
+    const clearAndResolve = () => {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      // Only clear backendProcess if it still refers to the process we stopped
+      if (backendProcess === processToStop) {
+        backendProcess = null;
+      }
+      resolve();
+    };
+
+    const forceKill = (signal: NodeJS.Signals = 'SIGKILL') => {
+      try {
+        if (!processToStop.killed) {
+          console.warn(`Forcefully killing backend process (pid=${pid}) with ${signal}`);
+          processToStop.kill(signal);
+        }
+      } catch (err) {
+        console.error('Error while forcefully killing backend process:', err);
+      }
+    };
+
+    timeout = setTimeout(() => {
+      console.warn(`Backend process (pid=${pid}) did not exit within ${timeoutMs}ms, forcing termination.`);
+      // Attempt a forceful kill on timeout
+      if (process.platform === 'win32') {
+        // On Windows, ChildProcess.kill() will translate to TerminateProcess
+        forceKill();
+      } else {
+        forceKill('SIGKILL');
+      }
+      clearAndResolve();
+    }, timeoutMs);
+
     if (process.platform === 'win32') {
       // On Windows, use taskkill to ensure child processes are terminated
-      spawn('taskkill', ['/pid', backendProcess.pid.toString(), '/f', '/t']);
+      if (pid) {
+        const taskkill = spawn('taskkill', ['/pid', pid.toString(), '/f', '/t']);
+
+        taskkill.on('error', (error) => {
+          console.error('Failed to run taskkill for backend process:', error);
+          // Fall back to killing the process directly
+          forceKill();
+          clearAndResolve();
+        });
+
+        taskkill.on('close', (code) => {
+          if (code !== 0) {
+            console.warn(`taskkill exited with code ${code} for backend process (pid=${pid}).`);
+          } else {
+            console.log(`Backend process (pid=${pid}) terminated via taskkill.`);
+          }
+          clearAndResolve();
+        });
+      } else {
+        console.warn('Backend process PID is undefined; cannot use taskkill.');
+        clearAndResolve();
+      }
     } else {
-      // On Unix-like systems, send SIGTERM
-      backendProcess.kill('SIGTERM');
+      // On Unix-like systems, send SIGTERM and wait for exit
+      processToStop.once('exit', (code, signal) => {
+        console.log(`Backend process (pid=${pid}) exited with code=${code}, signal=${signal}.`);
+        clearAndResolve();
+      });
+
+      try {
+        processToStop.kill('SIGTERM');
+      } catch (err) {
+        console.error('Error while sending SIGTERM to backend process:', err);
+        // If we cannot send SIGTERM, attempt a forceful kill immediately
+        forceKill('SIGKILL');
+        clearAndResolve();
+      }
     }
-    
-    backendProcess = null;
-  }
+  });
 }
 
 // Create the Electron window
@@ -250,21 +341,25 @@ app.whenReady().then(async () => {
 });
 
 // Quit when all windows are closed
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
-    stopBackend();
+    await stopBackend();
     app.quit();
   }
 });
 
 // Ensure backend is stopped on app quit
-app.on('before-quit', () => {
-  stopBackend();
+app.on('before-quit', async (event) => {
+  if (backendProcess) {
+    event.preventDefault();
+    await stopBackend();
+    app.quit();
+  }
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', async (error) => {
   console.error('Uncaught exception:', error);
-  stopBackend();
+  await stopBackend();
   app.quit();
 });

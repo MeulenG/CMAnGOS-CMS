@@ -1,7 +1,7 @@
 import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { AppConfig, AppSettings, Expansion, ConfigError } from '../types/config.types.js';
+import { AppConfig, AppSettings, ConfigError } from '../types/config.types.js';
 
 /**
  * ConfigService - Manages application configuration and persistent storage

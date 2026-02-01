@@ -67,7 +67,6 @@ if (app.Environment.IsDevelopment())
 }
 
 // Remove HTTPS redirection for localhost desktop app
-// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 

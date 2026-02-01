@@ -211,7 +211,9 @@ export class ConfigService {
     if (!password) return '';
     
     if (!safeStorage.isEncryptionAvailable()) {
-      console.warn('Encryption not available, storing password in base64');
+      // WARNING: This is NOT encryption and provides no security.
+      // The password is effectively stored in plain text, only base64-encoded.
+      console.warn('WARNING: Password encryption not available; storing password in plain text (only base64-encoded, provides no security)');
       return Buffer.from(password).toString('base64');
     }
 

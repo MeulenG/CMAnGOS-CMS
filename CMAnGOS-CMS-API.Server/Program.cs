@@ -4,15 +4,10 @@ using CMAnGOS_CMS_API.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure to listen only on localhost for desktop app
 builder.WebHost.UseUrls("http://localhost:5023");
 
-// Add services to the container.
-
-// Register CMAnGOS detection service
 builder.Services.AddSingleton<ICMAnGOSDetectionService, CMAnGOSDetectionService>();
 
-// Detect CMAnGOS expansion prefix early
 var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
 var detectionLogger = loggerFactory.CreateLogger<CMAnGOSDetectionService>();
 var detectionService = new CMAnGOSDetectionService(builder.Configuration, detectionLogger);
@@ -41,8 +36,6 @@ builder.Services.AddDbContext<MangosContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// Allow CORS for localhost (Electron app)
-// Using AllowAnyOrigin for local desktop app since renderer may use file:// or custom protocols
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
@@ -54,7 +47,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Log detected expansion
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation($"CMAnGOS CMS API started with expansion: {expansionPrefix}");
 logger.LogInformation($"Realmd Database: {expansionPrefix}realmd");
@@ -68,7 +60,6 @@ if (builder.Configuration.GetValue<bool>("AllowForwarding") == true) {
     app.UseForwardedHeaders();
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

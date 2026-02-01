@@ -235,8 +235,12 @@ export class ConfigService {
 
       return safeStorage.decryptString(buffer);
     } catch (error) {
-      console.error('Failed to decrypt password:', error);
-      return '';
+      console.error('Failed to decrypt password. This may indicate that saved credentials are no longer valid or cannot be decrypted on this system. Prompt the user to re-enter their database credentials.', {
+        error,
+        isEncryptionAvailable: safeStorage.isEncryptionAvailable(),
+        encryptedPasswordPreview: encryptedPassword.slice(0, 8)
+      });
+      throw new ConfigError('Failed to decrypt saved credentials. Please re-enter your database password.');
     }
   }
 

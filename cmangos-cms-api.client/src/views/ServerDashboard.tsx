@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useActiveProfile } from '../hooks/useActiveProfile';
 import '../components/AppLayout.css';
 
 interface ServerDashboardProps {
@@ -6,29 +7,7 @@ interface ServerDashboardProps {
 }
 
 const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
-  const [activeProfile, setActiveProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadActiveProfile();
-  }, []);
-
-  const loadActiveProfile = async () => {
-    try {
-      const activeIdResult = await window.electronAPI.config.getActiveProfile();
-      if (activeIdResult.success && activeIdResult.data) {
-        const profilesResult = await window.electronAPI.profile.getAll();
-        if (profilesResult.success && profilesResult.data) {
-          const profile = profilesResult.data.find((p: any) => p.id === activeIdResult.data);
-          setActiveProfile(profile || null);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load active profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { activeProfile, loading } = useActiveProfile();
 
   if (loading) {
     return (

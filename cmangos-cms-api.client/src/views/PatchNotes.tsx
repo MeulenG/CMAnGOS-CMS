@@ -15,8 +15,8 @@ const PatchNotes: React.FC = () => {
   const [releases, setReleases] = useState<GitHubRelease[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [repoOwner, setRepoOwner] = useState(''); // TODO: Get from settings
-  const [repoName, setRepoName] = useState(''); // TODO: Get from settings
+  const [repoOwner] = useState(''); // TODO: Get from settings
+  const [repoName] = useState(''); // TODO: Get from settings
 
   useEffect(() => {
     loadPatchNotes();

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import type { ServerProfile } from '../types/app.types';
+import { ExpansionLabels } from '../types/app.types';
 import '../components/AppLayout.css';
 
 const AppSettings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'general' | 'profiles' | 'github'>('general');
-  const [profiles, setProfiles] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'github' | 'profiles' | 'app'>('github');
+  const [profiles, setProfiles] = useState<ServerProfile[]>([]);
   const [githubRepo, setGithubRepo] = useState({ owner: '', name: '' });
   const [saving, setSaving] = useState(false);
 
@@ -15,7 +17,9 @@ const AppSettings: React.FC = () => {
   const loadProfiles = async () => {
     try {
       const loadedProfiles = await window.electronAPI.profile.getAll();
-      setProfiles(loadedProfiles);
+      if (loadedProfiles.success && loadedProfiles.data) {
+        setProfiles(loadedProfiles.data as unknown as ServerProfile[]);
+      }
     } catch (error) {
       console.error('Failed to load profiles:', error);
     }
@@ -23,7 +27,7 @@ const AppSettings: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      const config = await window.electronAPI.config.get();
+      await window.electronAPI.config.get();
       // TODO: Load GitHub settings from config
       // setGithubRepo({ owner: config.githubOwner || '', name: config.githubRepo || '' });
     } catch (error) {
@@ -60,15 +64,6 @@ const AppSettings: React.FC = () => {
     }
   };
 
-  const getExpansionLabel = (expansion: number) => {
-    const labels: Record<number, string> = {
-      0: 'Classic',
-      1: 'The Burning Crusade',
-      2: 'Wrath of the Lich King'
-    };
-    return labels[expansion] || 'Unknown';
-  };
-
   return (
     <div className="app-content">
       <div className="view-header">
@@ -78,10 +73,10 @@ const AppSettings: React.FC = () => {
 
       <div className="settings-tabs" style={{ marginBottom: '1.5rem' }}>
         <button
-          className={`settings-tab ${activeTab === 'general' ? 'active' : ''}`}
-          onClick={() => setActiveTab('general')}
+          className={`settings-tab ${activeTab === 'app' ? 'active' : ''}`}
+          onClick={() => setActiveTab('app')}
         >
-          General
+          Application
         </button>
         <button
           className={`settings-tab ${activeTab === 'profiles' ? 'active' : ''}`}
@@ -97,7 +92,7 @@ const AppSettings: React.FC = () => {
         </button>
       </div>
 
-      {activeTab === 'general' && (
+      {activeTab === 'app' && (
         <div className="card">
           <div className="card-title">Application Settings</div>
           <div className="form-group">
@@ -165,7 +160,7 @@ const AppSettings: React.FC = () => {
                         {profile.name}
                       </div>
                       <div style={{ color: '#b89968', fontSize: '0.9rem' }}>
-                        {getExpansionLabel(profile.expansion)} • {profile.host}:{profile.database.realmd.port}
+                        {ExpansionLabels[profile.expansion]} • {profile.database.host}:{profile.database.port}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>

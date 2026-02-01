@@ -1,30 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useActiveProfile } from '../hooks/useActiveProfile';
 import '../components/AppLayout.css';
 
 const LaunchWow: React.FC = () => {
-  const [activeProfile, setActiveProfile] = useState<any>(null);
+  const { activeProfile } = useActiveProfile();
   const [launching, setLaunching] = useState(false);
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
 
   useEffect(() => {
-    loadActiveProfile();
     checkServerStatus();
   }, []);
-
-  const loadActiveProfile = async () => {
-    try {
-      const activeIdResult = await window.electronAPI.config.getActiveProfile();
-      if (activeIdResult.success && activeIdResult.data) {
-        const profilesResult = await window.electronAPI.profile.getAll();
-        if (profilesResult.success && profilesResult.data) {
-          const profile = profilesResult.data.find((p: any) => p.id === activeIdResult.data);
-          setActiveProfile(profile || null);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load active profile:', error);
-    }
-  };
 
   const checkServerStatus = async () => {
     // TODO: Implement actual server status check

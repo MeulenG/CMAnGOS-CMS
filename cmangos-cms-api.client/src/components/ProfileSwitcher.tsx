@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ExpansionLabels } from '../../electron/types/config.types';
+import type { ServerProfile } from '../types/app.types';
+import { ExpansionLabels } from '../types/app.types';
 import './AppLayout.css';
 
 const ProfileSwitcher: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [activeProfile, setActiveProfile] = useState<any>(null);
+  const [profiles, setProfiles] = useState<ServerProfile[]>([]);
+  const [activeProfile, setActiveProfile] = useState<ServerProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,13 +17,14 @@ const ProfileSwitcher: React.FC = () => {
     try {
       const result = await window.electronAPI.profile.getAll();
       if (result.success && result.data) {
-        setProfiles(result.data);
+        setProfiles(result.data as unknown as ServerProfile[]);
         
         // Get active profile from config
         const configResult = await window.electronAPI.config.get();
         if (configResult.success && configResult.data) {
-          const active = result.data.find((p: any) => p.id === configResult.data.activeProfileId);
-          setActiveProfile(active || result.data[0]);
+          const activeProfileId = (configResult.data as { activeProfileId?: string | null }).activeProfileId;
+          const active = (result.data as unknown as ServerProfile[]).find(p => p.id === activeProfileId);
+          setActiveProfile(active || (result.data as unknown as ServerProfile[])[0] || null);
         }
       }
     } catch (error) {
@@ -37,7 +39,7 @@ const ProfileSwitcher: React.FC = () => {
     
     try {
       // Switch to selected profile
-      const result = await window.electronAPI.profile.switchTo(profileId);
+      const result = await window.electronAPI.config.setActiveProfile(profileId);
       if (result.success) {
         await loadProfiles();
       }

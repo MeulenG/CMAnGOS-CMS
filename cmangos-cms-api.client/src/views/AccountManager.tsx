@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import type { GameAccount } from '../types/app.types';
 import '../components/AppLayout.css';
 
 const AccountManager: React.FC = () => {
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts] = useState<GameAccount[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAccount, setNewAccount] = useState({ username: '', password: '', email: '' });
   const [creating, setCreating] = useState(false);

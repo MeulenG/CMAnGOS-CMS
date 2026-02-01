@@ -4,7 +4,7 @@ import { ExpansionLabels } from '../../../electron/types/config.types';
 import './Onboarding.css';
 
 const Summary: React.FC = () => {
-  const { onboardingData, previousStep, resetOnboarding } = useOnboarding();
+  const { onboardingData, previousStep } = useOnboarding();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

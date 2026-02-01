@@ -59,15 +59,20 @@ const PatchNotes: React.FC = () => {
 
   const formatBody = (body: string) => {
     // Basic markdown to HTML conversion (simplified)
-    return body
+    let formatted = body
       .replace(/^### (.*$)/gim, '<h3 class="release-heading">$1</h3>')
       .replace(/^## (.*$)/gim, '<h2 class="release-heading">$1</h2>')
       .replace(/^# (.*$)/gim, '<h1 class="release-heading">$1</h1>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^\- (.*$)/gim, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-      .replace(/\n/g, '<br />');
+      .replace(/^\- (.*$)/gim, '<li>$1</li>');
+    
+    // Wrap consecutive <li> elements in <ul> tags
+    formatted = formatted.replace(/(<li>.*?<\/li>\s*)+/gs, (match) => {
+      return `<ul>${match}</ul>`;
+    });
+    
+    return formatted.replace(/\n/g, '<br />');
   };
 
   if (loading) {

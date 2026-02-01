@@ -3,6 +3,11 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn, ChildProcess } from 'child_process';
 import * as fs from 'fs';
+import { existsSync } from 'fs';
+import { ConfigService } from './services/ConfigService.js';
+import { ProfileService } from './services/ProfileService.js';
+import { ConfigHandler } from './ipc/config-handler.js';
+import { ProfileHandler } from './ipc/profile-handler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -10,22 +15,24 @@ const __dirname = dirname(__filename);
 let mainWindow: BrowserWindow | null = null;
 let backendProcess: ChildProcess | null = null;
 
+// Services
+let configService: ConfigService;
+let profileService: ProfileService;
+let configHandler: ConfigHandler;
+let profileHandler: ProfileHandler;
+
 const API_PORT = 5023;
 const API_URL = `http://localhost:${API_PORT}`;
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Path to the backend executable
 function getBackendPath(): string {
   if (isDevelopment) {
-    // In development, we need to find the backend project
     const projectRoot = join(__dirname, '..', '..');
     return join(projectRoot, 'CMAnGOS-CMS-API.Server');
   } else {
-    // In production, backend should be bundled with the app
     const resourcesPath = process.resourcesPath;
     const backendPath = join(resourcesPath, 'backend');
     
-    // Check for different OS executables
     if (process.platform === 'win32') {
       return join(backendPath, 'CMAnGOS-CMS-API.Server.exe');
     } else {
@@ -34,7 +41,6 @@ function getBackendPath(): string {
   }
 }
 
-// Check if backend is running
 async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
@@ -53,15 +59,46 @@ async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   return false;
 }
 
+// Kill any existing backend processes on the port
+async function killExistingBackend(): Promise<void> {
+  return new Promise((resolve) => {
+    if (process.platform === 'win32') {
+      // On Windows, find and kill processes using the port
+      const findProcess = spawn('powershell', [
+        '-Command',
+        `Get-NetTCPConnection -LocalPort ${API_PORT} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }`
+      ]);
+      
+      findProcess.on('close', () => {
+        console.log('Cleaned up any existing backend processes');
+        setTimeout(resolve, 500); // Wait a bit for the port to be released
+      });
+    } else {
+      // On Unix-like systems, use lsof
+      const findProcess = spawn('sh', [
+        '-c',
+        `lsof -ti:${API_PORT} | xargs kill -9 2>/dev/null || true`
+      ]);
+      
+      findProcess.on('close', () => {
+        console.log('Cleaned up any existing backend processes');
+        setTimeout(resolve, 500);
+      });
+    }
+  });
+}
+
 // Start the ASP.NET Core backend
 async function startBackend(): Promise<void> {
+  // First, kill any existing backend processes
+  await killExistingBackend();
+  
   return new Promise((resolve, reject) => {
     const backendPath = getBackendPath();
     
     console.log('Starting backend from:', backendPath);
     
     if (isDevelopment) {
-      // In development, run using dotnet
       backendProcess = spawn('dotnet', ['run'], {
         cwd: backendPath,
         env: {
@@ -142,11 +179,18 @@ function stopBackend(): void {
 
 // Create the Electron window
 function createWindow(): void {
+  const preloadPath = join(__dirname, 'preload.js');
+  console.log('========================================');
+  console.log('Creating window with preload:', preloadPath);
+  console.log('__dirname:', __dirname);
+  console.log('Preload file exists:', existsSync(preloadPath));
+  console.log('========================================');
+  
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: join(__dirname, 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
     }
@@ -175,6 +219,18 @@ function createWindow(): void {
 app.whenReady().then(async () => {
   try {
     console.log('Starting CMAnGOS CMS Desktop Application...');
+    
+    // Initialize services
+    configService = new ConfigService();
+    await configService.initialize();
+    
+    profileService = new ProfileService(configService);
+    
+    // Initialize IPC handlers
+    configHandler = new ConfigHandler(configService);
+    profileHandler = new ProfileHandler(profileService);
+    
+    console.log('Services initialized successfully');
     
     // Start the backend first
     await startBackend();

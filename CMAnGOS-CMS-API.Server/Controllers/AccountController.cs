@@ -31,7 +31,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
 
         // GET: api/Account
         [HttpGet]
-        public async Task<IActionResult> GetUsernames(int limit = 5)
+        public async Task<IActionResult> GetUsernames(int limit = 1000)
         {
             var accounts = await _realmdDBContext
                 .Set<Account>()
@@ -177,8 +177,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
 
                 var realms = await _realmdDBContext.RealmLists.ToListAsync();
 
-                _logger.LogInformation("Account created successfully: {Username} (ID: {AccountId})", 
-                    username, newAccount.Id);
+                _logger.LogInformation("Account created successfully: {Username} (ID: {AccountId})", username, newAccount.Id);
 
                 return (AccountOpResult.AOR_OK, newAccount.Id);
             }
@@ -228,6 +227,66 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         // DELETE api/Account/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
+        {
+            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            _realmdDBContext.Set<Account>().Remove(account);
+            await _realmdDBContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/ban")]
+        public async Task<IActionResult> Ban(int id)
+        {
+            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            _realmdDBContext.Set<Account>().Remove(account);
+            await _realmdDBContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/mute")]
+        public async Task<IActionResult> Mute(int id)
+        {
+            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            _realmdDBContext.Set<Account>().Remove(account);
+            await _realmdDBContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/lock")]
+        public async Task<IActionResult> Lock(int id)
+        {
+            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            _realmdDBContext.Set<Account>().Remove(account);
+            await _realmdDBContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/gmlevel")]
+        public async Task<IActionResult> ChangeGmLevel(int id)
         {
             var account = await _realmdDBContext.Set<Account>().FindAsync(id);
             if (account == null)

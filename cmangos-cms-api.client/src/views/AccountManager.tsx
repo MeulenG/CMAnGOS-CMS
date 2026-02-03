@@ -3,12 +3,12 @@ import type { GameAccount } from '../types/app.types';
 import '../components/AppLayout.css';
 
 interface AccountAction {
-  type: 'ban' | 'mute' | 'lock' | 'gmlevel' | 'delete';
+  type: 'ban' | 'mute' | 'lock' | 'unlock' | 'gmlevel' | 'delete';
   account: GameAccount;
 }
 
 const AccountManager: React.FC = () => {
-  const backendURL = process.env.backend_port || 'http://localhost:5023';
+  const backendURL = 'http://localhost:5023';
   const [accounts, setAccounts] = useState<GameAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -28,7 +28,7 @@ const AccountManager: React.FC = () => {
   const fetchAccounts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${backendURL}/api/Account?limit=50`); 
+      const response = await fetch(`${backendURL}/api/Account?limit=1000`); 
       if (response.ok) {
         const data = await response.json();
         setAccounts(data);
@@ -120,6 +120,18 @@ const AccountManager: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to lock account:', error);
+    }
+  };
+
+  const handleUnlockAccount = async (id: number) => {
+    try {
+      const response = await fetch(`${backendURL}/api/Account/${id}/unlock`, { method: 'PATCH' });
+      if (response.ok) {
+        await fetchAccounts();
+        setActionModal(null);
+      }
+    } catch (error) {
+      console.error('Failed to unlock account:', error);
     }
   };
 
@@ -276,13 +288,23 @@ const AccountManager: React.FC = () => {
                               >
                                 Mute
                               </button>
-                              <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                                onClick={() => setActionModal({ type: 'lock', account })}
-                              >
-                                Lock
-                              </button>
+                              {account.locked > 0 ? (
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  onClick={() => setActionModal({ type: 'unlock', account })}
+                                >
+                                  Unlock
+                                </button>
+                              ) : (
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  onClick={() => setActionModal({ type: 'lock', account })}
+                                >
+                                  Lock
+                                </button>
+                              )}
                               <button
                                 className="btn"
                                 style={{ 
@@ -450,6 +472,7 @@ const AccountManager: React.FC = () => {
               {actionModal.type === 'ban' && 'Ban Account'}
               {actionModal.type === 'mute' && 'Mute Account'}
               {actionModal.type === 'lock' && 'Lock Account'}
+              {actionModal.type === 'unlock' && 'Unlock Account'}
               {actionModal.type === 'gmlevel' && 'Change GM Level'}
             </div>
 
@@ -492,6 +515,12 @@ const AccountManager: React.FC = () => {
               {actionModal.type === 'lock' && (
                 <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
                   Lock this account to prevent login. This can be reversed later.
+                </p>
+              )}
+
+              {actionModal.type === 'unlock' && (
+                <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
+                  Unlock this account to allow the player to log in again.
                 </p>
               )}
 
@@ -539,6 +568,8 @@ const AccountManager: React.FC = () => {
                     handleMuteAccount(actionModal.account.id);
                   } else if (actionModal.type === 'lock') {
                     handleLockAccount(actionModal.account.id);
+                  } else if (actionModal.type === 'unlock') {
+                    handleUnlockAccount(actionModal.account.id);
                   } else if (actionModal.type === 'gmlevel') {
                     handleChangeGmLevel(actionModal.account.id);
                   }
@@ -548,6 +579,7 @@ const AccountManager: React.FC = () => {
                 {actionModal.type === 'ban' && 'Ban Account'}
                 {actionModal.type === 'mute' && 'Mute Account'}
                 {actionModal.type === 'lock' && 'Lock Account'}
+                {actionModal.type === 'unlock' && 'Unlock Account'}
                 {actionModal.type === 'gmlevel' && 'Update GM Level'}
               </button>
             </div>

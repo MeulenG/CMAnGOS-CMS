@@ -8,7 +8,7 @@ interface AccountAction {
 }
 
 const AccountManager: React.FC = () => {
-  const backendURL = 'http://localhost:5023';
+  const backendURL = process.env.backend_port || 'http://localhost:5023';
   const [accounts, setAccounts] = useState<GameAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -29,7 +29,6 @@ const AccountManager: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(`${backendURL}/api/Account?limit=50`); 
-      console.log(response);
       if (response.ok) {
         const data = await response.json();
         setAccounts(data);

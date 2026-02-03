@@ -3,10 +3,6 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AppConfig, AppSettings, ConfigError } from '../types/config.types.js';
 
-/**
- * ConfigService - Manages application configuration and persistent storage
- * Handles reading, writing, and encryption of sensitive data
- */
 export class ConfigService {
   private configPath: string;
   private config: AppConfig | null = null;
@@ -28,9 +24,6 @@ export class ConfigService {
     this.configPath = path.join(userDataPath, 'config.json');
   }
 
-  /**
-   * Initialize the config service and load existing configuration
-   */
   async initialize(): Promise<void> {
     try {
       await this.loadConfig();
@@ -41,9 +34,6 @@ export class ConfigService {
     }
   }
 
-  /**
-   * Load configuration from disk
-   */
   private async loadConfig(): Promise<void> {
     try {
       const configData = await fs.readFile(this.configPath, 'utf-8');
@@ -69,9 +59,6 @@ export class ConfigService {
     }
   }
 
-  /**
-   * Save configuration to disk
-   */
   async saveConfig(): Promise<void> {
     if (!this.config) {
       throw new ConfigError('No configuration to save');
@@ -98,9 +85,6 @@ export class ConfigService {
     }
   }
 
-  /**
-   * Get the entire configuration
-   */
   getConfig(): AppConfig {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -108,9 +92,6 @@ export class ConfigService {
     return { ...this.config };
   }
 
-  /**
-   * Update configuration
-   */
   async updateConfig(updates: Partial<AppConfig>): Promise<void> {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -124,9 +105,6 @@ export class ConfigService {
     await this.saveConfig();
   }
 
-  /**
-   * Get active profile ID
-   */
   getActiveProfileId(): string | null {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -134,9 +112,6 @@ export class ConfigService {
     return this.config.activeProfileId;
   }
 
-  /**
-   * Set active profile
-   */
   async setActiveProfileId(profileId: string | null): Promise<void> {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -156,9 +131,6 @@ export class ConfigService {
     await this.saveConfig();
   }
 
-  /**
-   * Get application settings
-   */
   getSettings(): AppSettings {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -166,9 +138,6 @@ export class ConfigService {
     return { ...this.config.settings };
   }
 
-  /**
-   * Update application settings
-   */
   async updateSettings(settings: Partial<AppSettings>): Promise<void> {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -182,9 +151,6 @@ export class ConfigService {
     await this.saveConfig();
   }
 
-  /**
-   * Check if onboarding is completed
-   */
   isOnboardingCompleted(): boolean {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -192,9 +158,6 @@ export class ConfigService {
     return this.config.onboardingCompleted;
   }
 
-  /**
-   * Mark onboarding as completed
-   */
   async completeOnboarding(): Promise<void> {
     if (!this.config) {
       throw new ConfigError('Configuration not initialized');
@@ -204,9 +167,7 @@ export class ConfigService {
     await this.saveConfig();
   }
 
-  /**
-   * Encrypt a password using Electron's safeStorage
-   */
+
   private encryptPassword(password: string): string {
     if (!password) return '';
     
@@ -221,9 +182,6 @@ export class ConfigService {
     return encrypted.toString('base64');
   }
 
-  /**
-   * Decrypt a password using Electron's safeStorage
-   */
   private decryptPassword(encryptedPassword: string): string {
     if (!encryptedPassword) return '';
 
@@ -246,17 +204,11 @@ export class ConfigService {
     }
   }
 
-  /**
-   * Reset configuration to defaults (for testing/debugging)
-   */
   async resetConfig(): Promise<void> {
     this.config = { ...this.DEFAULT_CONFIG };
     await this.saveConfig();
   }
 
-  /**
-   * Get the configuration file path
-   */
   getConfigPath(): string {
     return this.configPath;
   }

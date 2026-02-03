@@ -53,7 +53,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
-        // POST api/Account/create
         [HttpPost]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
         {
@@ -273,16 +272,21 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         [HttpPatch("{id}/lock")]
         public async Task<IActionResult> Lock(int id)
         {
-            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
-            if (account == null)
-            {
-                return NotFound();
-            }
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Locked, a => 1));
+            return Ok(result);
+        }
 
-            _realmdDBContext.Set<Account>().Remove(account);
-            await _realmdDBContext.SaveChangesAsync();
-
-            return NoContent();
+        [HttpPatch("{id}/unlock")]
+        public async Task<IActionResult> Unlock(int id)
+        {
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Locked, a => 0));
+            return Ok(result);
         }
 
         [HttpPatch("{id}/gmlevel")]

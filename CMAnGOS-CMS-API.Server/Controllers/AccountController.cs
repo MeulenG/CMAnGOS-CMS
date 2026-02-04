@@ -239,21 +239,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{id}/ban")]
-        public async Task<IActionResult> Ban(int id)
-        {
-            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
-            if (account == null)
-            {
-                return NotFound();
-            }
-
-            _realmdDBContext.Set<Account>().Remove(account);
-            await _realmdDBContext.SaveChangesAsync();
-
-            return NoContent();
-        }
-
         [HttpPatch("{id}/mute")]
         public async Task<IActionResult> Mute(int id)
         {
@@ -290,16 +275,12 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         }
 
         [HttpPatch("{id}/gmlevel")]
-        public async Task<IActionResult> ChangeGmLevel(int id)
+        public async Task<IActionResult> ChangeGmLevel(int id, int gmlevel)
         {
-            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
-            if (account == null)
-            {
-                return NotFound();
-            }
-
-            _realmdDBContext.Set<Account>().Remove(account);
-            await _realmdDBContext.SaveChangesAsync();
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.GmLevel, a => gmlevel));
 
             return NoContent();
         }

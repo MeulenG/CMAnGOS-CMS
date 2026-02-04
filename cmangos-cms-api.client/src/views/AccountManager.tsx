@@ -3,7 +3,7 @@ import type { GameAccount } from '../types/app.types';
 import '../components/AppLayout.css';
 
 interface AccountAction {
-  type: 'ban' | 'mute' | 'lock' | 'unlock' | 'gmlevel' | 'delete';
+  type: 'mute' | 'lock' | 'unlock' | 'gmlevel' | 'delete';
   account: GameAccount;
 }
 
@@ -83,18 +83,6 @@ const AccountManager: React.FC = () => {
     }
   };
 
-  const handleBanAccount = async (id: number) => {
-    try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/ban`, { method: 'PATCH' });
-      if (response.ok) {
-        await fetchAccounts();
-        setActionModal(null);
-      }
-    } catch (error) {
-      console.error('Failed to ban account:', error);
-    }
-  };
-
   const handleMuteAccount = async (id: number) => {
     try {
       const response = await fetch(`${backendURL}/api/Account/${id}/mute`, {
@@ -137,11 +125,10 @@ const AccountManager: React.FC = () => {
 
   const handleChangeGmLevel = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/gmlevel`, {
+      const response = await fetch(`${backendURL}/api/Account/${id}/gmlevel?gmlevel=${gmLevel}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level: gmLevel })
       });
+      console.log(response);
       if (response.ok) {
         await fetchAccounts();
         setActionModal(null);
@@ -277,13 +264,6 @@ const AccountManager: React.FC = () => {
                               <button
                                 className="btn btn-secondary"
                                 style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                                onClick={() => setActionModal({ type: 'ban', account })}
-                              >
-                                Ban
-                              </button>
-                              <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                                 onClick={() => setActionModal({ type: 'mute', account })}
                               >
                                 Mute
@@ -294,7 +274,7 @@ const AccountManager: React.FC = () => {
                                   style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                                   onClick={() => setActionModal({ type: 'unlock', account })}
                                 >
-                                  Unlock
+                                  Unban
                                 </button>
                               ) : (
                                 <button
@@ -302,7 +282,7 @@ const AccountManager: React.FC = () => {
                                   style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                                   onClick={() => setActionModal({ type: 'lock', account })}
                                 >
-                                  Lock
+                                  Ban
                                 </button>
                               )}
                               <button
@@ -469,10 +449,9 @@ const AccountManager: React.FC = () => {
           <div className="card" style={{ maxWidth: '500px', width: '90%' }}>
             <div className="card-title">
               {actionModal.type === 'delete' && 'Delete Account'}
-              {actionModal.type === 'ban' && 'Ban Account'}
               {actionModal.type === 'mute' && 'Mute Account'}
-              {actionModal.type === 'lock' && 'Lock Account'}
-              {actionModal.type === 'unlock' && 'Unlock Account'}
+              {actionModal.type === 'lock' && 'Ban Account'}
+              {actionModal.type === 'unlock' && 'Unban Account'}
               {actionModal.type === 'gmlevel' && 'Change GM Level'}
             </div>
 
@@ -484,12 +463,6 @@ const AccountManager: React.FC = () => {
               {actionModal.type === 'delete' && (
                 <p style={{ color: '#ff4444', fontSize: '0.9rem' }}>
                   Warning: This action cannot be undone. All characters and data associated with this account will be permanently deleted.
-                </p>
-              )}
-
-              {actionModal.type === 'ban' && (
-                <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
-                  This will permanently ban the account. The player will not be able to log in.
                 </p>
               )}
 
@@ -514,13 +487,13 @@ const AccountManager: React.FC = () => {
 
               {actionModal.type === 'lock' && (
                 <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
-                  Lock this account to prevent login. This can be reversed later.
+                  Ban this account to prevent login. This can be reversed later.
                 </p>
               )}
 
               {actionModal.type === 'unlock' && (
                 <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
-                  Unlock this account to allow the player to log in again.
+                  Unban this account to allow the player to log in again.
                 </p>
               )}
 
@@ -562,8 +535,6 @@ const AccountManager: React.FC = () => {
                 onClick={() => {
                   if (actionModal.type === 'delete') {
                     handleDeleteAccount(actionModal.account.id);
-                  } else if (actionModal.type === 'ban') {
-                    handleBanAccount(actionModal.account.id);
                   } else if (actionModal.type === 'mute') {
                     handleMuteAccount(actionModal.account.id);
                   } else if (actionModal.type === 'lock') {
@@ -576,10 +547,9 @@ const AccountManager: React.FC = () => {
                 }}
               >
                 {actionModal.type === 'delete' && 'Delete Account'}
-                {actionModal.type === 'ban' && 'Ban Account'}
                 {actionModal.type === 'mute' && 'Mute Account'}
-                {actionModal.type === 'lock' && 'Lock Account'}
-                {actionModal.type === 'unlock' && 'Unlock Account'}
+                {actionModal.type === 'lock' && 'Ban Account'}
+                {actionModal.type === 'unlock' && 'Unban Account'}
                 {actionModal.type === 'gmlevel' && 'Update GM Level'}
               </button>
             </div>

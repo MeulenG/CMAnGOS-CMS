@@ -8,7 +8,21 @@ interface ServerDashboardProps {
 
 const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
   const { activeProfile, loading } = useActiveProfile();
-  const mapUrl = (import.meta.env.VITE_CLASSIC_MANGOS_MAP_URL ?? '').trim();
+  const rawMapUrl = (import.meta.env.VITE_CLASSIC_MANGOS_MAP_URL ?? '').trim();
+  const mapUrl = (() => {
+    if (!rawMapUrl) {
+      return '';
+    }
+    try {
+      const parsedUrl = new URL(rawMapUrl);
+      if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+        return parsedUrl.toString();
+      }
+    } catch {
+      return '';
+    }
+    return '';
+  })();
   const hasMapUrl = mapUrl.length > 0;
   const mapCard = (
     <div className="card">
@@ -29,6 +43,7 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
               src={mapUrl}
               style={{ width: '100%', height: '100%', border: 'none' }}
               loading="lazy"
+              sandbox="allow-scripts"
             />
           </div>
           <button

@@ -1,4 +1,5 @@
-import { app, safeStorage } from 'electron';
+import { app } from 'electron';
+import keytar from 'keytar';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AppConfig, AppSettings, ConfigError } from '../types/config.types.js';
@@ -6,6 +7,7 @@ import { AppConfig, AppSettings, ConfigError } from '../types/config.types.js';
 export class ConfigService {
   private configPath: string;
   private config: AppConfig | null = null;
+  private readonly KEYTAR_SERVICE = 'CMAnGOS-CMS-API';
   private readonly DEFAULT_CONFIG: AppConfig = {
     version: '1.0.0',
     activeProfileId: null,
@@ -38,17 +40,38 @@ export class ConfigService {
     try {
       const configData = await fs.readFile(this.configPath, 'utf-8');
       const parsedConfig = JSON.parse(configData) as AppConfig;
-      
-      // Decrypt passwords for all profiles
-      parsedConfig.profiles = parsedConfig.profiles.map(profile => ({
-        ...profile,
-        database: {
-          ...profile.database,
-          password: this.decryptPassword(profile.database.password)
+      const updatedProfiles: AppConfig['profiles'] = [];
+
+      for (const profile of parsedConfig.profiles) {
+        const existingKey = profile.database.passwordKey;
+        const defaultKey = this.getPasswordKey(profile.id);
+        const passwordKey = existingKey ?? defaultKey;
+
+        let resolvedPassword = '';
+
+        if (existingKey) {
+          const storedPassword = await keytar.getPassword(this.KEYTAR_SERVICE, existingKey);
+          if (!storedPassword) {
+            throw new ConfigError('Stored credentials are missing. Please re-enter your database password.');
+          }
+          resolvedPassword = storedPassword;
         }
-      }));
-      
-      this.config = parsedConfig;
+
+        updatedProfiles.push({
+          ...profile,
+          database: {
+            ...profile.database,
+            password: resolvedPassword,
+            passwordKey
+          }
+        });
+      }
+
+      this.config = {
+        ...parsedConfig,
+        profiles: updatedProfiles
+      };
+
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         // File doesn't exist, use default config
@@ -65,16 +88,31 @@ export class ConfigService {
     }
 
     try {
-      // Encrypt passwords before saving
-      const configToSave: AppConfig = {
-        ...this.config,
-        profiles: this.config.profiles.map(profile => ({
+      const profilesToSave: AppConfig['profiles'] = [];
+
+      for (const profile of this.config.profiles) {
+        const password = profile.database.password ?? '';
+        const passwordKey = profile.database.passwordKey ?? this.getPasswordKey(profile.id);
+
+        if (password) {
+          await keytar.setPassword(this.KEYTAR_SERVICE, passwordKey, password);
+        } else if (profile.database.passwordKey) {
+          await keytar.deletePassword(this.KEYTAR_SERVICE, passwordKey);
+        }
+
+        profilesToSave.push({
           ...profile,
           database: {
             ...profile.database,
-            password: this.encryptPassword(profile.database.password)
+            password: '',
+            passwordKey
           }
-        }))
+        });
+      }
+
+      const configToSave: AppConfig = {
+        ...this.config,
+        profiles: profilesToSave
       };
 
       const configDir = path.dirname(this.configPath);
@@ -168,40 +206,8 @@ export class ConfigService {
   }
 
 
-  private encryptPassword(password: string): string {
-    if (!password) return '';
-    
-    if (!safeStorage.isEncryptionAvailable()) {
-      // WARNING: This is NOT encryption and provides no security.
-      // The password is effectively stored in plain text, only base64-encoded.
-      console.warn('WARNING: Password encryption not available; storing password in plain text (only base64-encoded, provides no security)');
-      return Buffer.from(password).toString('base64');
-    }
-
-    const encrypted = safeStorage.encryptString(password);
-    return encrypted.toString('base64');
-  }
-
-  private decryptPassword(encryptedPassword: string): string {
-    if (!encryptedPassword) return '';
-
-    try {
-      const buffer = Buffer.from(encryptedPassword, 'base64');
-      
-      if (!safeStorage.isEncryptionAvailable()) {
-        // Password was stored in base64
-        return buffer.toString('utf-8');
-      }
-
-      return safeStorage.decryptString(buffer);
-    } catch (error) {
-      console.error('Failed to decrypt password. This may indicate that saved credentials are no longer valid or cannot be decrypted on this system. Prompt the user to re-enter their database credentials.', {
-        error,
-        isEncryptionAvailable: safeStorage.isEncryptionAvailable(),
-        encryptedPasswordPreview: encryptedPassword.slice(0, 8)
-      });
-      throw new ConfigError('Failed to decrypt saved credentials. Please re-enter your database password.');
-    }
+  private getPasswordKey(profileId: string): string {
+    return `db-password:${profileId}`;
   }
 
   async resetConfig(): Promise<void> {

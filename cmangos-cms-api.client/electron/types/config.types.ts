@@ -20,7 +20,8 @@ export interface DatabaseConfig {
   host: string;
   port: number;
   username: string;
-  password: string; // Encrypted when stored
+  password: string;
+  passwordKey?: string; // Keychain reference for stored password
 }
 
 export interface ServerProfile {

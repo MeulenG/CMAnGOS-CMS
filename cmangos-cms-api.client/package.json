@@ -14,6 +14,7 @@
     "compile:electron": "tsc -p tsconfig.electron.json && tsc -p tsconfig.preload.json"
   },
   "dependencies": {
+    "keytar": "^7.9.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",

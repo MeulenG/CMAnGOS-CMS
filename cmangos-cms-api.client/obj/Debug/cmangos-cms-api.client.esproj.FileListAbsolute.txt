@@ -1,0 +1,1 @@
+/home/runner/work/CMAnGOS-CMS/CMAnGOS-CMS/cmangos-cms-api.client/obj/Debug/cmangos-cms-api.client.esproj.CoreCompileInputs.cache

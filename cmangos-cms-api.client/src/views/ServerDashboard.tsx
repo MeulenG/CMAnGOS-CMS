@@ -8,6 +8,43 @@ interface ServerDashboardProps {
 
 const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
   const { activeProfile, loading } = useActiveProfile();
+  const mapUrl = (import.meta.env.VITE_CLASSIC_MANGOS_MAP_URL ?? '').trim();
+  const hasMapUrl = mapUrl.length > 0;
+  const mapCard = (
+    <div className="card">
+      <div className="card-title">ClassicMangosMap</div>
+      {hasMapUrl ? (
+        <>
+          <div
+            style={{
+              border: '1px solid rgba(212, 162, 52, 0.3)',
+              borderRadius: '6px',
+              overflow: 'hidden',
+              height: '360px',
+              marginBottom: '1rem'
+            }}
+          >
+            <iframe
+              title="ClassicMangosMap"
+              src={mapUrl}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              loading="lazy"
+            />
+          </div>
+          <button
+            className="btn btn-secondary"
+            onClick={() => window.open(mapUrl, '_blank', 'noopener,noreferrer')}
+          >
+            Open Full Map
+          </button>
+        </>
+      ) : (
+        <p style={{ color: '#b89968', margin: 0 }}>
+          Set VITE_CLASSIC_MANGOS_MAP_URL to the URL of your ClassicMangosMap instance to show it here.
+        </p>
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -26,6 +63,7 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
           <h1 className="view-title">No Active Profile</h1>
           <p className="view-subtitle">Please select or create a server profile to get started.</p>
         </div>
+        {mapCard}
       </div>
     );
   }
@@ -76,6 +114,8 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
           <button className="btn btn-secondary" onClick={() => onNavigate?.('patchnotes')}>View Patch Notes</button>
         </div>
       </div>
+
+      {mapCard}
 
       <div className="card">
         <div className="card-title">Recent Activity</div>

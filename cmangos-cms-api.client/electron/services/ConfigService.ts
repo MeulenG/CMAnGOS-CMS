@@ -1,13 +1,15 @@
-import { app } from 'electron';
-import keytar from 'keytar';
+import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AppConfig, AppSettings, ConfigError } from '../types/config.types.js';
 
 export class ConfigService {
   private configPath: string;
+  private secureStoragePath: string;
   private config: AppConfig | null = null;
-  private readonly KEYTAR_SERVICE = 'CMAnGOS-CMS-API';
+  private secureStorageLock: Promise<void> = Promise.resolve();
+  private readonly MAX_STORAGE_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  private readonly MAX_PASSWORD_LENGTH = 1000;
   private readonly DEFAULT_CONFIG: AppConfig = {
     version: '1.0.0',
     activeProfileId: null,
@@ -24,9 +26,16 @@ export class ConfigService {
   constructor() {
     const userDataPath = app.getPath('userData');
     this.configPath = path.join(userDataPath, 'config.json');
+    this.secureStoragePath = path.join(userDataPath, 'secure-storage.json');
   }
 
   async initialize(): Promise<void> {
+    // Check if encryption is available early to provide better error messages
+    if (!safeStorage.isEncryptionAvailable()) {
+      console.warn('Encryption is not available. The application may not function correctly without secure password storage.');
+      // Continue initialization but warn about missing encryption
+    }
+
     try {
       await this.loadConfig();
     } catch (error) {
@@ -34,6 +43,140 @@ export class ConfigService {
       this.config = { ...this.DEFAULT_CONFIG };
       await this.saveConfig();
     }
+  }
+
+  private checkEncryptionAvailable(): void {
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new ConfigError(
+        'Encryption is not available on this system. Electron\'s safeStorage requires a graphical user session and is not compatible with headless or server environments. ' +
+        'On Linux, ensure the Secret Service API (gnome-keyring or ksecretservice) is installed and running. ' +
+        'On Windows, DPAPI should be available by default. On macOS, Keychain should be available by default. ' +
+        'If you need to run this application in a headless environment, secure storage features will be unavailable.'
+      );
+    }
+  }
+
+  private async loadSecureStorage(): Promise<Record<string, string>> {
+    try {
+      const stats = await fs.stat(this.secureStoragePath);
+      
+      // Prevent resource exhaustion by checking file size
+      if (stats.size > this.MAX_STORAGE_FILE_SIZE) {
+        throw new ConfigError(`Secure storage file is too large (${stats.size} bytes). Maximum allowed is ${this.MAX_STORAGE_FILE_SIZE} bytes.`);
+      }
+
+      const data = await fs.readFile(this.secureStoragePath, 'utf-8');
+      
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(data);
+      } catch (parseError) {
+        throw new ConfigError(`Failed to parse secure storage file: ${(parseError as Error).message}. The file may be corrupted.`);
+      }
+
+      // Validate the parsed structure
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        throw new ConfigError('Secure storage file has invalid structure. Expected an object with string keys and values.');
+      }
+
+      const storage = parsed as Record<string, unknown>;
+      
+      // Validate all keys and values are strings
+      for (const [key, value] of Object.entries(storage)) {
+        if (typeof key !== 'string' || typeof value !== 'string') {
+          throw new ConfigError(`Secure storage file has invalid data. All keys and values must be strings.`);
+        }
+      }
+
+      return storage as Record<string, string>;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return {};
+      }
+      throw error;
+    }
+  }
+
+  private async saveSecureStorage(storage: Record<string, string>): Promise<void> {
+    // Serialize the lock to prevent race conditions
+    this.secureStorageLock = this.secureStorageLock.then(async () => {
+      const storageDir = path.dirname(this.secureStoragePath);
+      await fs.mkdir(storageDir, { recursive: true });
+      
+      // Write to a temporary file first for atomicity
+      const tempPath = `${this.secureStoragePath}.tmp`;
+      const content = JSON.stringify(storage, null, 2);
+      
+      try {
+        // Write with restrictive permissions from the start (Unix-like systems)
+        await fs.writeFile(tempPath, content, { encoding: 'utf-8', mode: 0o600 });
+      } catch (error) {
+        // If mode option fails (e.g., on Windows), write normally
+        await fs.writeFile(tempPath, content, 'utf-8');
+      }
+      
+      // Set restrictive permissions if not set during write
+      try {
+        await fs.chmod(tempPath, 0o600);
+      } catch (error) {
+        // chmod may fail on Windows or other platforms, but that's acceptable
+        console.warn('Failed to set restrictive file permissions on secure storage; continuing without changing permissions.');
+      }
+      
+      // Atomically rename temp file to target file
+      await fs.rename(tempPath, this.secureStoragePath);
+    });
+
+    await this.secureStorageLock;
+  }
+
+  private async getEncryptedPassword(key: string): Promise<string | null> {
+    const storage = await this.loadSecureStorage();
+    const encryptedHex = storage[key];
+    if (!encryptedHex) {
+      return null;
+    }
+
+    this.checkEncryptionAvailable();
+
+    try {
+      const encrypted = Buffer.from(encryptedHex, 'hex');
+      return safeStorage.decryptString(encrypted);
+    } catch (error) {
+      throw new ConfigError(`Failed to decrypt password: ${(error as Error).message}`);
+    }
+  }
+
+  private async setEncryptedPassword(key: string, password: string): Promise<void> {
+    // Validate password input
+    if (!password || password.length === 0) {
+      throw new ConfigError('Password cannot be empty');
+    }
+
+    if (password.length > this.MAX_PASSWORD_LENGTH) {
+      throw new ConfigError(`Password is too long. Maximum length is ${this.MAX_PASSWORD_LENGTH} characters.`);
+    }
+
+    // Validate key to prevent injection issues
+    // Check for null bytes (string termination) and path separators (path traversal)
+    if (!key || typeof key !== 'string' || key.includes('\0') || key.includes('/') || key.includes('\\')) {
+      throw new ConfigError('Invalid password key format');
+    }
+
+    this.checkEncryptionAvailable();
+
+    const encrypted = safeStorage.encryptString(password);
+    const encryptedHex = encrypted.toString('hex');
+
+    const storage = await this.loadSecureStorage();
+    storage[key] = encryptedHex;
+    await this.saveSecureStorage(storage);
+  }
+
+  private async deleteEncryptedPassword(key: string): Promise<void> {
+    const storage = await this.loadSecureStorage();
+    delete storage[key];
+    await this.saveSecureStorage(storage);
   }
 
   private async loadConfig(): Promise<void> {
@@ -50,7 +193,7 @@ export class ConfigService {
         let resolvedPassword = '';
 
         if (existingKey) {
-          const storedPassword = await keytar.getPassword(this.KEYTAR_SERVICE, existingKey);
+          const storedPassword = await this.getEncryptedPassword(existingKey);
           if (!storedPassword) {
             throw new ConfigError('Stored credentials are missing. Please re-enter your database password.');
           }
@@ -95,9 +238,9 @@ export class ConfigService {
         const passwordKey = profile.database.passwordKey ?? this.getPasswordKey(profile.id);
 
         if (password) {
-          await keytar.setPassword(this.KEYTAR_SERVICE, passwordKey, password);
+          await this.setEncryptedPassword(passwordKey, password);
         } else if (profile.database.passwordKey) {
-          await keytar.deletePassword(this.KEYTAR_SERVICE, passwordKey);
+          await this.deleteEncryptedPassword(passwordKey);
         }
 
         profilesToSave.push({

@@ -52,6 +52,14 @@ export class ConfigService {
     const storageDir = path.dirname(this.secureStoragePath);
     await fs.mkdir(storageDir, { recursive: true });
     await fs.writeFile(this.secureStoragePath, JSON.stringify(storage, null, 2), 'utf-8');
+    
+    // Set restrictive permissions (owner read/write only) on Unix-like systems
+    try {
+      await fs.chmod(this.secureStoragePath, 0o600);
+    } catch (error) {
+      // chmod may fail on Windows or other platforms, but that's acceptable
+      console.warn('Failed to set file permissions on secure storage:', error);
+    }
   }
 
   private async getEncryptedPassword(key: string): Promise<string | null> {
@@ -62,7 +70,11 @@ export class ConfigService {
     }
 
     if (!safeStorage.isEncryptionAvailable()) {
-      throw new ConfigError('Encryption is not available on this system');
+      throw new ConfigError(
+        'Encryption is not available on this system. This may occur if the app is running in a headless environment or if required system components are missing. ' +
+        'On Linux, ensure the Secret Service API (gnome-keyring or ksecretservice) is available. ' +
+        'On Windows, DPAPI should be available by default. On macOS, Keychain should be available by default.'
+      );
     }
 
     try {
@@ -75,7 +87,11 @@ export class ConfigService {
 
   private async setEncryptedPassword(key: string, password: string): Promise<void> {
     if (!safeStorage.isEncryptionAvailable()) {
-      throw new ConfigError('Encryption is not available on this system');
+      throw new ConfigError(
+        'Encryption is not available on this system. This may occur if the app is running in a headless environment or if required system components are missing. ' +
+        'On Linux, ensure the Secret Service API (gnome-keyring or ksecretservice) is available. ' +
+        'On Windows, DPAPI should be available by default. On macOS, Keychain should be available by default.'
+      );
     }
 
     const encrypted = safeStorage.encryptString(password);

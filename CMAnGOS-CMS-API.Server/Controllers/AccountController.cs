@@ -247,7 +247,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         {
             if (durationSeconds <= 0 || durationSeconds > MaxMuteDurationSeconds)
             {
-                return BadRequest($"durationSeconds must be between 1 and {MaxMuteDurationSeconds}.");
+                return BadRequest(new { message = $"durationSeconds must be between 1 and {MaxMuteDurationSeconds}." });
             }
 
             var result = await _realmdDBContext.Set<Models.Realmd.Account>()

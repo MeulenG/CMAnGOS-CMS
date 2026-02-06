@@ -240,18 +240,14 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         }
 
         [HttpPatch("{id}/mute")]
-        public async Task<IActionResult> Mute(int id)
+        public async Task<IActionResult> Mute(int id, int durationSeconds)
         {
-            var account = await _realmdDBContext.Set<Account>().FindAsync(id);
-            if (account == null)
-            {
-                return NotFound();
-            }
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.MuteTime, a => DateTimeOffset.UtcNow.ToUnixTimeSeconds() + durationSeconds));
 
-            _realmdDBContext.Set<Account>().Remove(account);
-            await _realmdDBContext.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(result);
         }
 
         [HttpPatch("{id}/lock")]

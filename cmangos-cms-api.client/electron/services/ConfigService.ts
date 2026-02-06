@@ -353,6 +353,75 @@ export class ConfigService {
     return `db-password:${profileId}`;
   }
 
+  /**
+   * Update the password for a specific profile
+   * This allows users to change their password when needed (e.g., after connection failures,
+   * forgotten passwords, or when they wish to update credentials)
+   */
+  async updateProfilePassword(profileId: string, newPassword: string): Promise<void> {
+    if (!this.config) {
+      throw new ConfigError('Configuration not initialized');
+    }
+
+    const profile = this.config.profiles.find(p => p.id === profileId);
+    if (!profile) {
+      throw new ConfigError(`Profile with id ${profileId} not found`);
+    }
+
+    const passwordKey = profile.database.passwordKey ?? this.getPasswordKey(profileId);
+
+    // Update or delete the password based on whether it's empty
+    if (newPassword && newPassword.length > 0) {
+      await this.setEncryptedPassword(passwordKey, newPassword);
+      
+      // Update the profile with the password key if it doesn't have one
+      if (!profile.database.passwordKey) {
+        profile.database.passwordKey = passwordKey;
+      }
+      
+      // Update in-memory password
+      profile.database.password = newPassword;
+    } else {
+      // If password is empty, delete stored password and clear the key
+      if (profile.database.passwordKey) {
+        await this.deleteEncryptedPassword(passwordKey);
+        profile.database.passwordKey = undefined;
+      }
+      profile.database.password = '';
+    }
+
+    await this.saveConfig();
+  }
+
+  /**
+   * Clear the stored password for a specific profile
+   * Useful when users want to remove stored credentials or when password needs to be re-entered
+   * 
+   * Note: When implementing database connection error handling, this method can be called
+   * to clear the stored password and prompt the user to re-enter it. Example scenarios:
+   * - Authentication failure (invalid credentials)
+   * - Connection timeout or database unavailable
+   * - User-initiated password reset
+   */
+  async clearProfilePassword(profileId: string): Promise<void> {
+    if (!this.config) {
+      throw new ConfigError('Configuration not initialized');
+    }
+
+    const profile = this.config.profiles.find(p => p.id === profileId);
+    if (!profile) {
+      throw new ConfigError(`Profile with id ${profileId} not found`);
+    }
+
+    if (profile.database.passwordKey) {
+      await this.deleteEncryptedPassword(profile.database.passwordKey);
+      profile.database.passwordKey = undefined;
+    }
+
+    profile.database.password = '';
+    await this.saveConfig();
+  }
+
   async resetConfig(): Promise<void> {
     this.config = { ...this.DEFAULT_CONFIG };
     await this.saveConfig();

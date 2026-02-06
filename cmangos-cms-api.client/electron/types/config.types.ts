@@ -75,6 +75,8 @@ export const IPC_CHANNELS = {
   PROFILE_UPDATE: 'profile:update',
   PROFILE_DELETE: 'profile:delete',
   PROFILE_GET_ALL: 'profile:get-all',
+  PROFILE_UPDATE_PASSWORD: 'profile:update-password',
+  PROFILE_CLEAR_PASSWORD: 'profile:clear-password',
   
   // Database operations
   DATABASE_TEST_CONNECTION: 'database:test-connection',

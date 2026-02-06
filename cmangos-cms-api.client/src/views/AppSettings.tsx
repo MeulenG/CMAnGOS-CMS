@@ -199,7 +199,7 @@ const AppSettings: React.FC = () => {
                         style={{ fontSize: '0.85rem' }}
                         onClick={() => handleEditPassword(profile.id, profile.name)}
                       >
-                        Edit Password
+                        Update Password
                       </button>
                       <button
                         className="btn btn-danger"

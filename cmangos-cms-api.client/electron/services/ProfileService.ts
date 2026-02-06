@@ -158,4 +158,18 @@ export class ProfileService {
     const config = this.configService.getConfig();
     return config.profiles.some(p => p.name === name && p.id !== excludeId);
   }
+
+  /**
+   * Update the password for a specific profile
+   */
+  async updateProfilePassword(profileId: string, newPassword: string): Promise<void> {
+    await this.configService.updateProfilePassword(profileId, newPassword);
+  }
+
+  /**
+   * Clear the stored password for a specific profile
+   */
+  async clearProfilePassword(profileId: string): Promise<void> {
+    await this.configService.clearProfilePassword(profileId);
+  }
 }

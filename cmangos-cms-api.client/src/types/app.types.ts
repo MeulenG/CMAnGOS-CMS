@@ -24,8 +24,8 @@ export interface DatabaseConfig {
   host: string;
   port: number;
   username: string;
-  // Should not be encoded in any way, should be encrypted lmfao
   password: string;
+  passwordKey?: string; // Keychain reference for stored password
 }
 
 export interface ServerProfile {

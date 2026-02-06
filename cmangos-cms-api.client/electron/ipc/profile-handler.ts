@@ -83,6 +83,36 @@ export class ProfileHandler {
         };
       }
     });
+
+    // Update profile password
+    ipcMain.handle(IPC_CHANNELS.PROFILE_UPDATE_PASSWORD, async (_event: IpcMainInvokeEvent, id: string, newPassword: string) => {
+      try {
+        await this.profileService.updateProfilePassword(id, newPassword);
+        return {
+          success: true
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: (error as Error).message
+        };
+      }
+    });
+
+    // Clear profile password
+    ipcMain.handle(IPC_CHANNELS.PROFILE_CLEAR_PASSWORD, async (_event: IpcMainInvokeEvent, id: string) => {
+      try {
+        await this.profileService.clearProfilePassword(id);
+        return {
+          success: true
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: (error as Error).message
+        };
+      }
+    });
   }
 
   /**
@@ -93,5 +123,7 @@ export class ProfileHandler {
     ipcMain.removeHandler(IPC_CHANNELS.PROFILE_CREATE);
     ipcMain.removeHandler(IPC_CHANNELS.PROFILE_UPDATE);
     ipcMain.removeHandler(IPC_CHANNELS.PROFILE_DELETE);
+    ipcMain.removeHandler(IPC_CHANNELS.PROFILE_UPDATE_PASSWORD);
+    ipcMain.removeHandler(IPC_CHANNELS.PROFILE_CLEAR_PASSWORD);
   }
 }

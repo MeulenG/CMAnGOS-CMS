@@ -22,8 +22,32 @@ const AccountManager: React.FC = () => {
   const [muteHours, setMuteHours] = useState(24);
 
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && actionModal) {
+        setActionModal(null);
+      }
+    };
+    
+    if (actionModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [actionModal]);
+
+  useEffect(() => {
     fetchAccounts();
   }, []);
+
+  useEffect(() => {
+    if (actionModal) {
+      if (actionModal.type === 'gmlevel') {
+        setGmLevel(actionModal.account.gmlevel);
+      }
+      if (actionModal.type === 'mute') {
+        setMuteHours(24);
+      }
+    }
+  }, [actionModal]);
 
   const fetchAccounts = async () => {
     setLoading(true);
@@ -32,9 +56,17 @@ const AccountManager: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setAccounts(data);
+      } else {
+        try {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to fetch accounts. Please try again.');
+        } catch {
+          alert('Failed to fetch accounts. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Failed to fetch accounts:', error);
+      alert('Failed to fetch accounts: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -77,9 +109,17 @@ const AccountManager: React.FC = () => {
       if (response.ok) {
         await fetchAccounts();
         setActionModal(null);
+      } else {
+        try {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to delete account');
+        } catch {
+          alert('Failed to delete account');
+        }
       }
     } catch (error) {
       console.error('Failed to delete account:', error);
+      alert('Failed to delete account: ' + (error as Error).message);
     }
   };
 
@@ -91,9 +131,17 @@ const AccountManager: React.FC = () => {
       if (response.ok) {
         await fetchAccounts();
         setActionModal(null);
+      } else {
+        try {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to mute account. Please try again.');
+        } catch {
+          alert('Failed to mute account. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Failed to mute account:', error);
+      alert('An unexpected error occurred while muting the account. Please try again.');
     }
   };
 
@@ -103,9 +151,21 @@ const AccountManager: React.FC = () => {
       if (response.ok) {
         await fetchAccounts();
         setActionModal(null);
+      } else {
+        let errorMessage = 'Failed to lock account.';
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` Server responded: ${errorText}`;
+          }
+        } catch {
+          // Ignore errors while reading error response
+        }
+        window.alert(errorMessage);
       }
     } catch (error) {
       console.error('Failed to lock account:', error);
+      window.alert('Failed to lock account due to a network or server error. Please try again.');
     }
   };
 
@@ -115,9 +175,21 @@ const AccountManager: React.FC = () => {
       if (response.ok) {
         await fetchAccounts();
         setActionModal(null);
+      } else {
+        let errorMessage = 'Failed to unlock account.';
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` Server responded: ${errorText}`;
+          }
+        } catch {
+          // Ignore errors while reading error response
+        }
+        window.alert(errorMessage);
       }
     } catch (error) {
       console.error('Failed to unlock account:', error);
+      window.alert('An unexpected error occurred while unlocking the account.');
     }
   };
 
@@ -126,13 +198,24 @@ const AccountManager: React.FC = () => {
       const response = await fetch(`${backendURL}/api/Account/${id}/gmlevel?gmlevel=${gmLevel}`, {
         method: 'PATCH',
       });
-      console.log(response);
       if (response.ok) {
         await fetchAccounts();
         setActionModal(null);
+      } else {
+        let errorMessage = 'Failed to change GM level.';
+        try {
+          const details = await response.text();
+          if (details) {
+            errorMessage += ` ${details}`;
+          }
+        } catch {
+          // Ignore errors while reading error details
+        }
+        window.alert(errorMessage);
       }
     } catch (error) {
       console.error('Failed to change GM level:', error);
+      window.alert('Failed to change GM level. Please try again.');
     }
   };
 
@@ -164,7 +247,10 @@ const AccountManager: React.FC = () => {
                   className="form-input"
                   placeholder="Search accounts..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   style={{ width: '250px', margin: 0 }}
                 />
                 <button className="btn btn-primary" onClick={() => setShowCreateForm(true)}>
@@ -432,20 +518,30 @@ const AccountManager: React.FC = () => {
       )}
 
       {actionModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(10, 6, 3, 0.9)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div className="card" style={{ maxWidth: '500px', width: '90%' }}>
-            <div className="card-title">
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(10, 6, 3, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+          onClick={() => setActionModal(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div 
+            className="card" 
+            style={{ maxWidth: '500px', width: '90%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="card-title" id="modal-title">
               {actionModal.type === 'delete' && 'Delete Account'}
               {actionModal.type === 'mute' && 'Mute Account'}
               {actionModal.type === 'lock' && 'Ban Account'}

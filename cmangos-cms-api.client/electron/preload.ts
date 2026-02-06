@@ -14,6 +14,8 @@ const IPC_CHANNELS = {
   PROFILE_UPDATE: 'profile:update',
   PROFILE_DELETE: 'profile:delete',
   PROFILE_GET_ALL: 'profile:get-all',
+  PROFILE_UPDATE_PASSWORD: 'profile:update-password',
+  PROFILE_CLEAR_PASSWORD: 'profile:clear-password',
 } as const;
 
 // Type-safe IPC API with generic result types
@@ -41,6 +43,8 @@ export interface ElectronAPI {
     create: (profileData: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
     update: (id: string, updates: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
     delete: (id: string) => Promise<IPCResult<void>>;
+    updatePassword: (id: string, newPassword: string) => Promise<IPCResult<void>>;
+    clearPassword: (id: string) => Promise<IPCResult<void>>;
   };
 }
 
@@ -65,7 +69,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke(IPC_CHANNELS.PROFILE_CREATE, profileData),
     update: (id: string, updates: Record<string, unknown>) => 
       ipcRenderer.invoke(IPC_CHANNELS.PROFILE_UPDATE, id, updates),
-    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PROFILE_DELETE, id)
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PROFILE_DELETE, id),
+    updatePassword: (id: string, newPassword: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PROFILE_UPDATE_PASSWORD, id, newPassword),
+    clearPassword: (id: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PROFILE_CLEAR_PASSWORD, id)
   }
 } as ElectronAPI);
 

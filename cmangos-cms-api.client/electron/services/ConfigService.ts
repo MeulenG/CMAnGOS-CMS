@@ -382,9 +382,10 @@ export class ConfigService {
       // Update in-memory password
       profile.database.password = newPassword;
     } else {
-      // If password is empty, delete stored password
+      // If password is empty, delete stored password and clear the key
       if (profile.database.passwordKey) {
         await this.deleteEncryptedPassword(passwordKey);
+        profile.database.passwordKey = undefined;
       }
       profile.database.password = '';
     }
@@ -414,6 +415,7 @@ export class ConfigService {
 
     if (profile.database.passwordKey) {
       await this.deleteEncryptedPassword(profile.database.passwordKey);
+      profile.database.passwordKey = undefined;
     }
 
     profile.database.password = '';

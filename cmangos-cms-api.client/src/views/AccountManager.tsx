@@ -85,10 +85,8 @@ const AccountManager: React.FC = () => {
 
   const handleMuteAccount = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/mute`, {
+      const response = await fetch(`${backendURL}/api/Account/${id}/mute?durationSeconds=${muteHours * 3600}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hours: muteHours })
       });
       if (response.ok) {
         await fetchAccounts();

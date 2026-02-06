@@ -242,10 +242,21 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         [HttpPatch("{id}/mute")]
         public async Task<IActionResult> Mute(int id, int durationSeconds)
         {
+            const int maxDurationSeconds = 60 * 60 * 24 * 365; // 1 year
+            if (durationSeconds <= 0 || durationSeconds > maxDurationSeconds)
+            {
+                return BadRequest($"durationSeconds must be between 1 and {maxDurationSeconds}.");
+            }
+
             var result = await _realmdDBContext.Set<Models.Realmd.Account>()
                 .Where(account => account.Id == id)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(a => a.MuteTime, a => DateTimeOffset.UtcNow.ToUnixTimeSeconds() + durationSeconds));
+
+            if (result == 0)
+            {
+                return NotFound();
+            }
 
             return Ok(result);
         }
@@ -257,6 +268,12 @@ namespace CMAnGOS_CMS_API.Server.Controllers
                 .Where(account => account.Id == id)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(a => a.Locked, a => 1));
+
+            if (result == 0)
+            {
+                return NotFound();
+            }
+
             return Ok(result);
         }
 
@@ -267,16 +284,32 @@ namespace CMAnGOS_CMS_API.Server.Controllers
                 .Where(account => account.Id == id)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(a => a.Locked, a => 0));
+
+            if (result == 0)
+            {
+                return NotFound();
+            }
+
             return Ok(result);
         }
 
         [HttpPatch("{id}/gmlevel")]
         public async Task<IActionResult> ChangeGmLevel(int id, int gmlevel)
         {
+            if (gmlevel < 0 || gmlevel > 3)
+            {
+                return BadRequest("gmlevel must be between 0 and 3.");
+            }
+
             var result = await _realmdDBContext.Set<Models.Realmd.Account>()
                 .Where(account => account.Id == id)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(a => a.GmLevel, a => gmlevel));
+
+            if (result == 0)
+            {
+                return NotFound();
+            }
 
             return NoContent();
         }

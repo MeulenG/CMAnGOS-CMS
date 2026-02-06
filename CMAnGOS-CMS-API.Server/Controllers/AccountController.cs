@@ -23,6 +23,9 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         private readonly RealmdContext _realmdDBContext;
         private readonly ILogger<AccountController> _logger;
 
+        // Max mute duration: 1 year (365 days)
+        private static readonly int MaxMuteDurationSeconds = (int)TimeSpan.FromDays(365).TotalSeconds;
+
         public AccountController(RealmdContext realmdDBContext, ILogger<AccountController> logger)
         {
             _realmdDBContext = realmdDBContext;
@@ -239,16 +242,20 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return NoContent();
         }
 
-        // TODO: Add [Authorize] attribute when authentication is implemented
-        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
+        // ===================================================================
+        // SECURITY WARNING: The following account management endpoints 
+        // (Mute, Lock, Unlock, ChangeGmLevel) are currently unprotected.
+        // 
+        // TODO: Add [Authorize] attributes when authentication is implemented.
+        // These endpoints should only be accessible to administrators.
+        // ===================================================================
+
         [HttpPatch("{id}/mute")]
         public async Task<IActionResult> Mute(int id, int durationSeconds)
         {
-            // Max duration: 1 year (365 days)
-            int maxDurationSeconds = (int)TimeSpan.FromDays(365).TotalSeconds;
-            if (durationSeconds <= 0 || durationSeconds > maxDurationSeconds)
+            if (durationSeconds <= 0 || durationSeconds > MaxMuteDurationSeconds)
             {
-                return BadRequest($"durationSeconds must be between 1 and {maxDurationSeconds}.");
+                return BadRequest($"durationSeconds must be between 1 and {MaxMuteDurationSeconds}.");
             }
 
             var result = await _realmdDBContext.Set<Models.Realmd.Account>()
@@ -264,8 +271,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
-        // TODO: Add [Authorize] attribute when authentication is implemented
-        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/lock")]
         public async Task<IActionResult> Lock(int id)
         {
@@ -282,8 +287,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
-        // TODO: Add [Authorize] attribute when authentication is implemented
-        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/unlock")]
         public async Task<IActionResult> Unlock(int id)
         {
@@ -300,8 +303,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
-        // TODO: Add [Authorize] attribute when authentication is implemented
-        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/gmlevel")]
         public async Task<IActionResult> ChangeGmLevel(int id, int gmlevel)
         {

@@ -13,6 +13,8 @@ dist-ssr
 dist-electron
 release
 *.local
+obj
+bin
 
 # Editor directories and files
 .vscode/*

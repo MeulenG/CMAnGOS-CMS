@@ -1,13 +1,12 @@
-import { app } from 'electron';
-import keytar from 'keytar';
+import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AppConfig, AppSettings, ConfigError } from '../types/config.types.js';
 
 export class ConfigService {
   private configPath: string;
+  private secureStoragePath: string;
   private config: AppConfig | null = null;
-  private readonly KEYTAR_SERVICE = 'CMAnGOS-CMS-API';
   private readonly DEFAULT_CONFIG: AppConfig = {
     version: '1.0.0',
     activeProfileId: null,
@@ -24,6 +23,7 @@ export class ConfigService {
   constructor() {
     const userDataPath = app.getPath('userData');
     this.configPath = path.join(userDataPath, 'config.json');
+    this.secureStoragePath = path.join(userDataPath, 'secure-storage.json');
   }
 
   async initialize(): Promise<void> {
@@ -34,6 +34,62 @@ export class ConfigService {
       this.config = { ...this.DEFAULT_CONFIG };
       await this.saveConfig();
     }
+  }
+
+  private async loadSecureStorage(): Promise<Record<string, string>> {
+    try {
+      const data = await fs.readFile(this.secureStoragePath, 'utf-8');
+      return JSON.parse(data) as Record<string, string>;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return {};
+      }
+      throw error;
+    }
+  }
+
+  private async saveSecureStorage(storage: Record<string, string>): Promise<void> {
+    const storageDir = path.dirname(this.secureStoragePath);
+    await fs.mkdir(storageDir, { recursive: true });
+    await fs.writeFile(this.secureStoragePath, JSON.stringify(storage, null, 2), 'utf-8');
+  }
+
+  private async getEncryptedPassword(key: string): Promise<string | null> {
+    const storage = await this.loadSecureStorage();
+    const encryptedHex = storage[key];
+    if (!encryptedHex) {
+      return null;
+    }
+
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new ConfigError('Encryption is not available on this system');
+    }
+
+    try {
+      const encrypted = Buffer.from(encryptedHex, 'hex');
+      return safeStorage.decryptString(encrypted);
+    } catch (error) {
+      throw new ConfigError(`Failed to decrypt password: ${(error as Error).message}`);
+    }
+  }
+
+  private async setEncryptedPassword(key: string, password: string): Promise<void> {
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new ConfigError('Encryption is not available on this system');
+    }
+
+    const encrypted = safeStorage.encryptString(password);
+    const encryptedHex = encrypted.toString('hex');
+
+    const storage = await this.loadSecureStorage();
+    storage[key] = encryptedHex;
+    await this.saveSecureStorage(storage);
+  }
+
+  private async deleteEncryptedPassword(key: string): Promise<void> {
+    const storage = await this.loadSecureStorage();
+    delete storage[key];
+    await this.saveSecureStorage(storage);
   }
 
   private async loadConfig(): Promise<void> {
@@ -50,7 +106,7 @@ export class ConfigService {
         let resolvedPassword = '';
 
         if (existingKey) {
-          const storedPassword = await keytar.getPassword(this.KEYTAR_SERVICE, existingKey);
+          const storedPassword = await this.getEncryptedPassword(existingKey);
           if (!storedPassword) {
             throw new ConfigError('Stored credentials are missing. Please re-enter your database password.');
           }
@@ -95,9 +151,9 @@ export class ConfigService {
         const passwordKey = profile.database.passwordKey ?? this.getPasswordKey(profile.id);
 
         if (password) {
-          await keytar.setPassword(this.KEYTAR_SERVICE, passwordKey, password);
+          await this.setEncryptedPassword(passwordKey, password);
         } else if (profile.database.passwordKey) {
-          await keytar.deletePassword(this.KEYTAR_SERVICE, passwordKey);
+          await this.deleteEncryptedPassword(passwordKey);
         }
 
         profilesToSave.push({

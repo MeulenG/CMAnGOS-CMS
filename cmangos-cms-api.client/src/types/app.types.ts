@@ -20,19 +20,14 @@ export const ExpansionLabels: Record<Expansion, string> = {
   [Expansion.WOTLK]: 'Wrath of the Lich King'
 };
 
-/**
- * Database configuration
- */
 export interface DatabaseConfig {
   host: string;
   port: number;
   username: string;
-  password: string; // Encrypted when stored
+  // Should not be encoded in any way, should be encrypted lmfao
+  password: string;
 }
 
-/**
- * Server profile with all configuration
- */
 export interface ServerProfile {
   id: string;
   name: string;
@@ -43,9 +38,6 @@ export interface ServerProfile {
   lastUsed: string;
 }
 
-/**
- * Application settings
- */
 export interface AppSettings {
   autoUpdate: boolean;
   launchOnStartup: boolean;
@@ -53,9 +45,6 @@ export interface AppSettings {
   checkUpdatesOnStartup: boolean;
 }
 
-/**
- * Complete application configuration
- */
 export interface AppConfig {
   version: string;
   activeProfileId: string | null;
@@ -64,23 +53,20 @@ export interface AppConfig {
   onboardingCompleted: boolean;
 }
 
-/**
- * Game account interface for account management
- */
 export interface GameAccount {
   id: number;
   username: string;
   email: string;
   joindate: string;
-  last_login: string;
+  last_login?: string;
   expansion: number;
   mutetime: number;
-  locale: number;
+  locale: string;
+  gmlevel: number;
+  locked: number;
 }
 
-/**
- * IPC operation result wrapper
- */
+
 export interface IPCResult<T = unknown> {
   success: boolean;
   data?: T;

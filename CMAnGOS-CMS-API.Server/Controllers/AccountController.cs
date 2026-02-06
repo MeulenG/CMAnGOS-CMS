@@ -31,7 +31,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
 
         // GET: api/Account
         [HttpGet]
-        public async Task<IActionResult> GetUsernames(int limit = 5)
+        public async Task<IActionResult> GetUsernames(int limit = 1000)
         {
             var accounts = await _realmdDBContext
                 .Set<Account>()
@@ -53,7 +53,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
-        // POST api/Account/create
         [HttpPost]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
         {
@@ -177,8 +176,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
 
                 var realms = await _realmdDBContext.RealmLists.ToListAsync();
 
-                _logger.LogInformation("Account created successfully: {Username} (ID: {AccountId})", 
-                    username, newAccount.Id);
+                _logger.LogInformation("Account created successfully: {Username} (ID: {AccountId})", username, newAccount.Id);
 
                 return (AccountOpResult.AOR_OK, newAccount.Id);
             }
@@ -237,6 +235,48 @@ namespace CMAnGOS_CMS_API.Server.Controllers
 
             _realmdDBContext.Set<Account>().Remove(account);
             await _realmdDBContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/mute")]
+        public async Task<IActionResult> Mute(int id, int durationSeconds)
+        {
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.MuteTime, a => DateTimeOffset.UtcNow.ToUnixTimeSeconds() + durationSeconds));
+
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}/lock")]
+        public async Task<IActionResult> Lock(int id)
+        {
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Locked, a => 1));
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}/unlock")]
+        public async Task<IActionResult> Unlock(int id)
+        {
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Locked, a => 0));
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}/gmlevel")]
+        public async Task<IActionResult> ChangeGmLevel(int id, int gmlevel)
+        {
+            var result = await _realmdDBContext.Set<Models.Realmd.Account>()
+                .Where(account => account.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.GmLevel, a => gmlevel));
 
             return NoContent();
         }

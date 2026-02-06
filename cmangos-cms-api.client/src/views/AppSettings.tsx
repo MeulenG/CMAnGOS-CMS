@@ -8,6 +8,8 @@ const AppSettings: React.FC = () => {
   const [profiles, setProfiles] = useState<ServerProfile[]>([]);
   const [githubRepo, setGithubRepo] = useState({ owner: '', name: '' });
   const [saving, setSaving] = useState(false);
+  const [editingPassword, setEditingPassword] = useState<{ profileId: string; profileName: string } | null>(null);
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     loadProfiles();
@@ -48,6 +50,34 @@ const AppSettings: React.FC = () => {
       console.error('Failed to delete profile:', error);
       alert('Failed to delete profile: ' + (error as Error).message);
     }
+  };
+
+  const handleEditPassword = (profileId: string, profileName: string) => {
+    setEditingPassword({ profileId, profileName });
+    setNewPassword('');
+  };
+
+  const handleSavePassword = async () => {
+    if (!editingPassword) return;
+
+    try {
+      const result = await window.electronAPI.profile.updatePassword(editingPassword.profileId, newPassword);
+      if (result.success) {
+        alert('Password updated successfully');
+        setEditingPassword(null);
+        setNewPassword('');
+      } else {
+        alert('Failed to update password: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Failed to update password:', error);
+      alert('Failed to update password: ' + (error as Error).message);
+    }
+  };
+
+  const handleCancelPasswordEdit = () => {
+    setEditingPassword(null);
+    setNewPassword('');
   };
 
   const handleSaveGithubSettings = async () => {
@@ -164,8 +194,12 @@ const AppSettings: React.FC = () => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
-                        Edit
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ fontSize: '0.85rem' }}
+                        onClick={() => handleEditPassword(profile.id, profile.name)}
+                      >
+                        Edit Password
                       </button>
                       <button
                         className="btn btn-danger"
@@ -251,6 +285,79 @@ const AppSettings: React.FC = () => {
               'Save GitHub Settings'
             )}
           </button>
+        </div>
+      )}
+
+      {/* Password Edit Modal */}
+      {editingPassword && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(30, 30, 40, 0.95))',
+            border: '2px solid rgba(212, 162, 52, 0.3)',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+          }}>
+            <h2 style={{ 
+              color: '#d4a234', 
+              fontFamily: 'Cinzel, serif',
+              marginBottom: '0.5rem',
+              fontSize: '1.5rem'
+            }}>
+              Update Database Password
+            </h2>
+            <p style={{ color: '#b89968', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              Profile: {editingPassword.profileName}
+            </p>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="new-password">
+                New Password
+              </label>
+              <input
+                id="new-password"
+                type="password"
+                className="form-input"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new database password"
+                autoFocus
+              />
+              <p style={{ color: '#b89968', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                Leave empty to remove the stored password
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleSavePassword}
+                style={{ flex: 1 }}
+              >
+                Save Password
+              </button>
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleCancelPasswordEdit}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

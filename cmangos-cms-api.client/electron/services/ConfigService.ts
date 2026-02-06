@@ -395,6 +395,12 @@ export class ConfigService {
   /**
    * Clear the stored password for a specific profile
    * Useful when users want to remove stored credentials or when password needs to be re-entered
+   * 
+   * Note: When implementing database connection error handling, this method can be called
+   * to clear the stored password and prompt the user to re-enter it. Example scenarios:
+   * - Authentication failure (invalid credentials)
+   * - Connection timeout or database unavailable
+   * - User-initiated password reset
    */
   async clearProfilePassword(profileId: string): Promise<void> {
     if (!this.config) {

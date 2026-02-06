@@ -149,7 +149,7 @@ export class ConfigService {
 
   private async setEncryptedPassword(key: string, password: string): Promise<void> {
     // Validate password input
-    if (password === '') {
+    if (!password || password.length === 0) {
       throw new ConfigError('Password cannot be empty');
     }
 
@@ -158,7 +158,8 @@ export class ConfigService {
     }
 
     // Validate key to prevent injection issues
-    if (!key || typeof key !== 'string' || key.includes('\0') || key.includes('/')) {
+    // Check for null bytes (string termination) and path separators (path traversal)
+    if (!key || typeof key !== 'string' || key.includes('\0') || key.includes('/') || key.includes('\\')) {
       throw new ConfigError('Invalid password key format');
     }
 

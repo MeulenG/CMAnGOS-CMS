@@ -242,14 +242,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return NoContent();
         }
 
-        // ===================================================================
-        // SECURITY WARNING: The following account management endpoints 
-        // (Mute, Lock, Unlock, ChangeGmLevel) are currently unprotected.
-        // 
-        // TODO: Add [Authorize] attributes when authentication is implemented.
-        // These endpoints should only be accessible to administrators.
-        // ===================================================================
-
         [HttpPatch("{id}/mute")]
         public async Task<IActionResult> Mute(int id, int durationSeconds)
         {
@@ -306,11 +298,6 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         [HttpPatch("{id}/gmlevel")]
         public async Task<IActionResult> ChangeGmLevel(int id, int gmlevel)
         {
-            if (gmlevel < 0 || gmlevel > 3)
-            {
-                return BadRequest("gmlevel must be between 0 and 3.");
-            }
-
             var result = await _realmdDBContext.Set<Models.Realmd.Account>()
                 .Where(account => account.Id == id)
                 .ExecuteUpdateAsync(setters => setters

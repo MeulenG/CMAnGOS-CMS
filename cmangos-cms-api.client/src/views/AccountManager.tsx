@@ -57,7 +57,12 @@ const AccountManager: React.FC = () => {
         const data = await response.json();
         setAccounts(data);
       } else {
-        alert('Failed to fetch accounts. Please try again.');
+        try {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to fetch accounts. Please try again.');
+        } catch {
+          alert('Failed to fetch accounts. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Failed to fetch accounts:', error);
@@ -127,7 +132,12 @@ const AccountManager: React.FC = () => {
         await fetchAccounts();
         setActionModal(null);
       } else {
-        alert('Failed to mute account. Please try again.');
+        try {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to mute account. Please try again.');
+        } catch {
+          alert('Failed to mute account. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Failed to mute account:', error);
@@ -142,7 +152,16 @@ const AccountManager: React.FC = () => {
         await fetchAccounts();
         setActionModal(null);
       } else {
-        window.alert(`Failed to lock account. Server responded with status ${response.status}.`);
+        let errorMessage = 'Failed to lock account.';
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` Server responded: ${errorText}`;
+          }
+        } catch {
+          // Ignore errors while reading error response
+        }
+        window.alert(errorMessage);
       }
     } catch (error) {
       console.error('Failed to lock account:', error);

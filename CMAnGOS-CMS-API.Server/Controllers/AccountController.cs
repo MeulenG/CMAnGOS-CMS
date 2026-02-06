@@ -244,7 +244,8 @@ namespace CMAnGOS_CMS_API.Server.Controllers
         [HttpPatch("{id}/mute")]
         public async Task<IActionResult> Mute(int id, int durationSeconds)
         {
-            const int maxDurationSeconds = 60 * 60 * 24 * 365; // 1 year
+            // Max duration: 1 year (365 days)
+            int maxDurationSeconds = (int)TimeSpan.FromDays(365).TotalSeconds;
             if (durationSeconds <= 0 || durationSeconds > maxDurationSeconds)
             {
                 return BadRequest($"durationSeconds must be between 1 and {maxDurationSeconds}.");

@@ -239,6 +239,8 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return NoContent();
         }
 
+        // TODO: Add [Authorize] attribute when authentication is implemented
+        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/mute")]
         public async Task<IActionResult> Mute(int id, int durationSeconds)
         {
@@ -261,6 +263,8 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
+        // TODO: Add [Authorize] attribute when authentication is implemented
+        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/lock")]
         public async Task<IActionResult> Lock(int id)
         {
@@ -277,6 +281,8 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
+        // TODO: Add [Authorize] attribute when authentication is implemented
+        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/unlock")]
         public async Task<IActionResult> Unlock(int id)
         {
@@ -293,6 +299,8 @@ namespace CMAnGOS_CMS_API.Server.Controllers
             return Ok(result);
         }
 
+        // TODO: Add [Authorize] attribute when authentication is implemented
+        // SECURITY WARNING: This endpoint is currently unprotected and should only be accessible to administrators
         [HttpPatch("{id}/gmlevel")]
         public async Task<IActionResult> ChangeGmLevel(int id, int gmlevel)
         {

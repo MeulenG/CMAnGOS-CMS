@@ -22,6 +22,19 @@ const AccountManager: React.FC = () => {
   const [muteHours, setMuteHours] = useState(24);
 
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && actionModal) {
+        setActionModal(null);
+      }
+    };
+    
+    if (actionModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [actionModal]);
+
+  useEffect(() => {
     fetchAccounts();
   }, []);
 
@@ -486,20 +499,30 @@ const AccountManager: React.FC = () => {
       )}
 
       {actionModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(10, 6, 3, 0.9)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div className="card" style={{ maxWidth: '500px', width: '90%' }}>
-            <div className="card-title">
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(10, 6, 3, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+          onClick={() => setActionModal(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div 
+            className="card" 
+            style={{ maxWidth: '500px', width: '90%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="card-title" id="modal-title">
               {actionModal.type === 'delete' && 'Delete Account'}
               {actionModal.type === 'mute' && 'Mute Account'}
               {actionModal.type === 'lock' && 'Ban Account'}

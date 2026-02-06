@@ -308,7 +308,7 @@ namespace CMAnGOS_CMS_API.Server.Controllers
                 return NotFound();
             }
 
-            return NoContent();
+            return Ok(result);
         }
     }
 }

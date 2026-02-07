@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { postJson } from '../../utils/api';
 import './Onboarding.css';
 
 const DatabaseConfig: React.FC = () => {
   const { onboardingData, updateDatabase, nextStep, previousStep } = useOnboarding();
-  const backendURL = 'http://localhost:5023';
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [errors, setErrors] = useState({
@@ -61,20 +61,17 @@ const DatabaseConfig: React.FC = () => {
     setTestResult(null);
 
     try {
-      const response = await fetch(`${backendURL}/api/Database/test-connection`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const data = await postJson<{ success?: boolean; message?: string; error?: string }>(
+        '/Database/test-connection',
+        {
           host: onboardingData.database.host,
           port: onboardingData.database.port,
           username: onboardingData.database.username,
           password: onboardingData.database.password
-        })
-      });
+        }
+      );
 
-      const data = await response.json();
-
-      if (response.ok && data?.success) {
+      if (data?.success) {
         setTestResult({
           success: true,
           message: data.message || 'Connection successful!'

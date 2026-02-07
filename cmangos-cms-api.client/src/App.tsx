@@ -7,9 +7,11 @@ import PatchNotes from './views/PatchNotes';
 import AppSettings from './views/AppSettings';
 import ServerLogs from './views/ServerLogs';
 import Onboarding from './pages/Onboarding/Onboarding';
+import { getJson } from './utils/api';
 import './App.css';
 
 function App() {
+  console.log('VITE_API_KEY =', import.meta.env.VITE_API_KEY);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
@@ -22,28 +24,8 @@ function App() {
 
   const checkOnboardingStatus = async () => {
     try {
-      console.log('Checking onboarding status...');
-      console.log('window.electronAPI exists:', !!window.electronAPI);
-      
-      // Check if running in Electron
-      if (window.electronAPI) {
-        console.log('Running in Electron, getting config...');
-        const result = await window.electronAPI.config.get();
-        console.log('Config result:', result);
-        
-        if (result.success && result.data) {
-          console.log('Onboarding completed:', result.data.onboardingCompleted);
-          setIsOnboardingComplete(result.data.onboardingCompleted);
-        } else {
-          console.log('Config not available, showing onboarding');
-          // Default to showing onboarding if we can't get config
-          setIsOnboardingComplete(false);
-        }
-      } else {
-        console.log('Not running in Electron, skipping onboarding');
-        // Running in web browser (development), skip onboarding
-        setIsOnboardingComplete(true);
-      }
+      const result = await getJson<{ onboardingCompleted?: boolean }>('/config');
+      setIsOnboardingComplete(Boolean(result.onboardingCompleted));
     } catch (error) {
       console.error('Failed to check onboarding status:', error);
       setIsOnboardingComplete(false);

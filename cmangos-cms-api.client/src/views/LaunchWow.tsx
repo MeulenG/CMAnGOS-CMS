@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useActiveProfile } from '../hooks/useActiveProfile';
+import type { ServerProcessStatus } from '../types/app.types';
+import { postJson } from '../utils/api';
 import '../components/AppLayout.css';
 
 const LaunchWow: React.FC = () => {
@@ -26,17 +28,11 @@ const LaunchWow: React.FC = () => {
     setServerStatus('checking');
 
     try {
-      const result = await window.electronAPI.server.status({
+      const statuses = await postJson<ServerProcessStatus[]>('/server/status', {
         realmdPath: activeProfile.realmdPath,
         mangosdPath: activeProfile.mangosdPath
       });
 
-      if (!result.success || !result.data) {
-        setServerStatus('offline');
-        return;
-      }
-
-      const statuses = result.data as Array<{ status?: string }>;
       const allRunning = statuses.length > 0 && statuses.every((status) => status.status === 'running');
       setServerStatus(allRunning ? 'online' : 'offline');
     } catch (error) {
@@ -51,8 +47,10 @@ const LaunchWow: React.FC = () => {
     setLaunching(true);
     setLaunchResult(null);
     try {
-      const result = await window.electronAPI.wow.launch(activeProfile.wowPath);
-      if (result.success) {
+      const result = await postJson<{ executablePath: string }>('/wow/launch', {
+        wowPath: activeProfile.wowPath
+      });
+      if (result.executablePath) {
         setLaunchResult({
           success: true,
           message: 'WoW launched successfully.'
@@ -60,7 +58,7 @@ const LaunchWow: React.FC = () => {
       } else {
         setLaunchResult({
           success: false,
-          message: result.error || 'Failed to launch WoW'
+          message: 'Failed to launch WoW'
         });
       }
     } catch (error) {

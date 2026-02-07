@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { GameAccount } from '../types/app.types';
+import { deleteJson, getJson, patchJson, postJson } from '../utils/api';
 import '../components/AppLayout.css';
 
 interface AccountAction {
@@ -8,7 +9,6 @@ interface AccountAction {
 }
 
 const AccountManager: React.FC = () => {
-  const backendURL = 'http://localhost:5023';
   const [accounts, setAccounts] = useState<GameAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -52,18 +52,8 @@ const AccountManager: React.FC = () => {
   const fetchAccounts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${backendURL}/api/Account?limit=1000`); 
-      if (response.ok) {
-        const data = await response.json();
-        setAccounts(data);
-      } else {
-        try {
-          const errorData = await response.json();
-          alert(errorData.message || 'Failed to fetch accounts. Please try again.');
-        } catch {
-          alert('Failed to fetch accounts. Please try again.');
-        }
-      }
+      const data = await getJson<GameAccount[]>('/Account?limit=1000');
+      setAccounts(data);
     } catch (error) {
       console.error('Failed to fetch accounts:', error);
       alert('Failed to fetch accounts: ' + (error as Error).message);
@@ -77,24 +67,15 @@ const AccountManager: React.FC = () => {
     setCreating(true);
 
     try {
-      const response = await fetch(`${backendURL}/api/Account`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: newAccount.username,
-          password: newAccount.password,
-          email: newAccount.email || null
-        })
+      await postJson('/Account', {
+        username: newAccount.username,
+        password: newAccount.password,
+        email: newAccount.email || null
       });
 
-      if (response.ok) {
-        await fetchAccounts();
-        setShowCreateForm(false);
-        setNewAccount({ username: '', password: '', email: '' });
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to create account');
-      }
+      await fetchAccounts();
+      setShowCreateForm(false);
+      setNewAccount({ username: '', password: '', email: '' });
     } catch (error) {
       console.error('Failed to create account:', error);
       alert('Failed to create account: ' + (error as Error).message);
@@ -105,18 +86,9 @@ const AccountManager: React.FC = () => {
 
   const handleDeleteAccount = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}`, { method: 'DELETE' });
-      if (response.ok) {
-        await fetchAccounts();
-        setActionModal(null);
-      } else {
-        try {
-          const errorData = await response.json();
-          alert(errorData.message || 'Failed to delete account');
-        } catch {
-          alert('Failed to delete account');
-        }
-      }
+      await deleteJson(`/Account/${id}`);
+      await fetchAccounts();
+      setActionModal(null);
     } catch (error) {
       console.error('Failed to delete account:', error);
       alert('Failed to delete account: ' + (error as Error).message);
@@ -125,20 +97,9 @@ const AccountManager: React.FC = () => {
 
   const handleMuteAccount = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/mute?durationSeconds=${muteHours * 3600}`, {
-        method: 'PATCH',
-      });
-      if (response.ok) {
-        await fetchAccounts();
-        setActionModal(null);
-      } else {
-        try {
-          const errorData = await response.json();
-          alert(errorData.message || 'Failed to mute account. Please try again.');
-        } catch {
-          alert('Failed to mute account. Please try again.');
-        }
-      }
+      await patchJson(`/Account/${id}/mute?durationSeconds=${muteHours * 3600}`);
+      await fetchAccounts();
+      setActionModal(null);
     } catch (error) {
       console.error('Failed to mute account:', error);
       alert('An unexpected error occurred while muting the account. Please try again.');
@@ -147,22 +108,9 @@ const AccountManager: React.FC = () => {
 
   const handleLockAccount = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/lock`, { method: 'PATCH' });
-      if (response.ok) {
-        await fetchAccounts();
-        setActionModal(null);
-      } else {
-        let errorMessage = 'Failed to lock account.';
-        try {
-          const errorText = await response.text();
-          if (errorText) {
-            errorMessage += ` Server responded: ${errorText}`;
-          }
-        } catch {
-          // Ignore errors while reading error response
-        }
-        window.alert(errorMessage);
-      }
+      await patchJson(`/Account/${id}/lock`);
+      await fetchAccounts();
+      setActionModal(null);
     } catch (error) {
       console.error('Failed to lock account:', error);
       window.alert('Failed to lock account due to a network or server error. Please try again.');
@@ -171,22 +119,9 @@ const AccountManager: React.FC = () => {
 
   const handleUnlockAccount = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/unlock`, { method: 'PATCH' });
-      if (response.ok) {
-        await fetchAccounts();
-        setActionModal(null);
-      } else {
-        let errorMessage = 'Failed to unlock account.';
-        try {
-          const errorText = await response.text();
-          if (errorText) {
-            errorMessage += ` Server responded: ${errorText}`;
-          }
-        } catch {
-          // Ignore errors while reading error response
-        }
-        window.alert(errorMessage);
-      }
+      await patchJson(`/Account/${id}/unlock`);
+      await fetchAccounts();
+      setActionModal(null);
     } catch (error) {
       console.error('Failed to unlock account:', error);
       window.alert('An unexpected error occurred while unlocking the account.');
@@ -195,24 +130,9 @@ const AccountManager: React.FC = () => {
 
   const handleChangeGmLevel = async (id: number) => {
     try {
-      const response = await fetch(`${backendURL}/api/Account/${id}/gmlevel?gmlevel=${gmLevel}`, {
-        method: 'PATCH',
-      });
-      if (response.ok) {
-        await fetchAccounts();
-        setActionModal(null);
-      } else {
-        let errorMessage = 'Failed to change GM level.';
-        try {
-          const details = await response.text();
-          if (details) {
-            errorMessage += ` ${details}`;
-          }
-        } catch {
-          // Ignore errors while reading error details
-        }
-        window.alert(errorMessage);
-      }
+      await patchJson(`/Account/${id}/gmlevel?gmlevel=${gmLevel}`);
+      await fetchAccounts();
+      setActionModal(null);
     } catch (error) {
       console.error('Failed to change GM level:', error);
       window.alert('Failed to change GM level. Please try again.');

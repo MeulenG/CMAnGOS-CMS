@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useActiveProfile } from '../hooks/useActiveProfile';
 import type { ServerProcessStatus } from '../types/app.types';
+import { postJson } from '../utils/api';
 import '../components/AppLayout.css';
 
 interface ServerDashboardProps {
@@ -22,7 +23,7 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
 
     const loadStatus = async () => {
       try {
-        const result = await window.electronAPI.server.status({
+        const data = await postJson<ServerProcessStatus[]>('/server/status', {
           realmdPath: activeProfile.realmdPath,
           mangosdPath: activeProfile.mangosdPath
         });
@@ -31,12 +32,8 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
           return;
         }
 
-        if (result.success && result.data) {
-          setServerStatus(result.data);
-          setServerError(null);
-        } else {
-          setServerError(result.error || 'Failed to load server status');
-        }
+        setServerStatus(data);
+        setServerError(null);
       } catch (error) {
         if (mounted) {
           setServerError((error as Error).message || 'Failed to load server status');
@@ -66,13 +63,8 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
         realmdPath: activeProfile.realmdPath,
         mangosdPath: activeProfile.mangosdPath
       };
-      const result = await window.electronAPI.server[action](payload);
-
-      if (result.success && result.data) {
-        setServerStatus(result.data);
-      } else {
-        setServerError(result.error || `Failed to ${action} server processes`);
-      }
+      const data = await postJson<ServerProcessStatus[]>(`/server/${action}`, payload);
+      setServerStatus(data);
     } catch (error) {
       setServerError((error as Error).message || `Failed to ${action} server processes`);
     } finally {

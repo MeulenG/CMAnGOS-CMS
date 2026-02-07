@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { ServerProfile } from '../types/app.types';
 import { ExpansionLabels } from '../types/app.types';
+import { deleteJson, getJson, postJson } from '../utils/api';
 import '../components/AppLayout.css';
 
 const AppSettings: React.FC = () => {
@@ -18,10 +19,8 @@ const AppSettings: React.FC = () => {
 
   const loadProfiles = async () => {
     try {
-      const loadedProfiles = await window.electronAPI.profile.getAll();
-      if (loadedProfiles.success && loadedProfiles.data) {
-        setProfiles(loadedProfiles.data as unknown as ServerProfile[]);
-      }
+      const loadedProfiles = await getJson<ServerProfile[]>('/profile');
+      setProfiles(loadedProfiles);
     } catch (error) {
       console.error('Failed to load profiles:', error);
     }
@@ -29,7 +28,7 @@ const AppSettings: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      await window.electronAPI.config.get();
+      await getJson('/config');
       // TODO: Load GitHub settings from config
       // setGithubRepo({ owner: config.githubOwner || '', name: config.githubRepo || '' });
     } catch (error) {
@@ -43,7 +42,7 @@ const AppSettings: React.FC = () => {
     }
 
     try {
-      await window.electronAPI.profile.delete(id);
+      await deleteJson(`/profile/${id}`);
       await loadProfiles();
       alert('Profile deleted successfully');
     } catch (error) {
@@ -61,14 +60,12 @@ const AppSettings: React.FC = () => {
     if (!editingPassword) return;
 
     try {
-      const result = await window.electronAPI.profile.updatePassword(editingPassword.profileId, newPassword);
-      if (result.success) {
-        alert('Password updated successfully');
-        setEditingPassword(null);
-        setNewPassword('');
-      } else {
-        alert('Failed to update password: ' + (result.error || 'Unknown error'));
-      }
+      await postJson<void>(`/profile/${editingPassword.profileId}/password`, {
+        password: newPassword
+      });
+      alert('Password updated successfully');
+      setEditingPassword(null);
+      setNewPassword('');
     } catch (error) {
       console.error('Failed to update password:', error);
       alert('Failed to update password: ' + (error as Error).message);

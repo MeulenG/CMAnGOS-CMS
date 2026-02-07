@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { postJson } from '../../utils/api';
 import './Onboarding.css';
 
 type ValidationResult = {
@@ -56,22 +57,18 @@ const ServerBinaries: React.FC = () => {
     setValidationResult(null);
 
     try {
-      const result = await window.electronAPI.server.validatePaths({
+      const result = await postJson<{ realmdPath: string; mangosdPath: string }>('/server/validate-paths', {
         realmdPath: onboardingData.realmdPath,
         mangosdPath: onboardingData.mangosdPath
       });
 
-      if (result.success) {
-        setValidationResult({
-          success: true,
-          message: 'realmd.exe and mangosd.exe were found.'
-        });
-      } else {
-        setValidationResult({
-          success: false,
-          message: result.error || 'Validation failed'
-        });
-      }
+      updateRealmdPath(result.realmdPath);
+      updateMangosdPath(result.mangosdPath);
+
+      setValidationResult({
+        success: true,
+        message: 'realmd.exe and mangosd.exe were found.'
+      });
     } catch (error) {
       setValidationResult({
         success: false,

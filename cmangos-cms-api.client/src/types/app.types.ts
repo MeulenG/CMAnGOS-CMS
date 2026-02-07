@@ -34,8 +34,31 @@ export interface ServerProfile {
   expansion: Expansion;
   database: DatabaseConfig;
   wowPath: string;
+  realmdPath: string;
+  mangosdPath: string;
   createdAt: string;
   lastUsed: string;
+}
+
+export type ServerProcessName = 'realmd' | 'mangosd';
+
+export interface ServerProcessStatus {
+  name: ServerProcessName;
+  status: 'running' | 'stopped' | 'unknown';
+  pid?: number;
+  executablePath?: string;
+  startedByApp?: boolean;
+  error?: string;
+}
+
+export interface ServerLogOutput {
+  stdout: string;
+  stderr: string;
+}
+
+export interface ServerLogsSnapshot {
+  realmd: ServerLogOutput;
+  mangosd: ServerLogOutput;
 }
 
 export interface AppSettings {

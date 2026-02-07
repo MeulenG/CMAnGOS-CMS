@@ -3,7 +3,11 @@ import type { ServerProfile } from '../types/app.types';
 import { ExpansionLabels } from '../types/app.types';
 import './AppLayout.css';
 
-const ProfileSwitcher: React.FC = () => {
+interface ProfileSwitcherProps {
+  onAddProfile: () => void;
+}
+
+const ProfileSwitcher: React.FC<ProfileSwitcherProps> = ({ onAddProfile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [profiles, setProfiles] = useState<ServerProfile[]>([]);
   const [activeProfile, setActiveProfile] = useState<ServerProfile | null>(null);
@@ -50,8 +54,7 @@ const ProfileSwitcher: React.FC = () => {
 
   const handleAddProfile = () => {
     setIsOpen(false);
-    // TODO: Open onboarding or profile creation modal
-    alert('Profile creation will be implemented');
+    onAddProfile();
   };
 
   if (loading) {

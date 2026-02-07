@@ -4,9 +4,10 @@ import './AppLayout.css';
 
 interface AppTopBarProps {
   onNavigate: (view: string) => void;
+  onAddProfile: () => void;
 }
 
-const AppTopBar: React.FC<AppTopBarProps> = ({ onNavigate }) => {
+const AppTopBar: React.FC<AppTopBarProps> = ({ onNavigate, onAddProfile }) => {
   return (
     <div className="app-top-bar">
       <div className="app-title">
@@ -14,7 +15,7 @@ const AppTopBar: React.FC<AppTopBarProps> = ({ onNavigate }) => {
       </div>
 
       <div className="app-top-actions">
-        <ProfileSwitcher />
+        <ProfileSwitcher onAddProfile={onAddProfile} />
         <button className="settings-button" onClick={() => onNavigate('settings')} title="Settings">
           Settings
         </button>

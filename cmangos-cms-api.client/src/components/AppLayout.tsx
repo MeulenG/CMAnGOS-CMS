@@ -7,12 +7,13 @@ interface AppLayoutProps {
   children: ReactNode;
   currentView: string;
   onNavigate: (view: string) => void;
+  onAddProfile: () => void;
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children, currentView, onNavigate }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ children, currentView, onNavigate, onAddProfile }) => {
   return (
     <div className="app-layout">
-      <AppTopBar onNavigate={onNavigate} />
+      <AppTopBar onNavigate={onNavigate} onAddProfile={onAddProfile} />
       <div className="app-body">
         <AppSidebar currentView={currentView} onNavigate={onNavigate} />
         <main className="app-main">

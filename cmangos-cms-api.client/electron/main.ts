@@ -52,11 +52,11 @@ function getBackendPath(): string {
 async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const response = await fetch(`${API_URL}/swagger/index.html`, { 
-        method: 'HEAD',
+      const response = await fetch(`${API_URL}/api/health`, {
+        method: 'GET',
         signal: AbortSignal.timeout(1000)
       });
-      if (response.ok || response.status === 404) {
+      if (response.ok || response.status === 404 || response.status === 401) {
         return true;
       }
     } catch (error) {

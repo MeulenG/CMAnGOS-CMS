@@ -18,10 +18,17 @@ const Summary: React.FC = () => {
         name: onboardingData.profileName,
         expansion: onboardingData.expansion!,
         database: onboardingData.database,
-        wowPath: onboardingData.wowPath
+        wowPath: onboardingData.wowPath,
+        realmdPath: onboardingData.realmdPath,
+        mangosdPath: onboardingData.mangosdPath
       });
 
       if (result.success) {
+        const newProfile = result.data as { id?: string } | undefined;
+        if (newProfile?.id) {
+          await window.electronAPI.config.setActiveProfile(newProfile.id);
+        }
+
         // Mark onboarding as completed
         await window.electronAPI.config.save({ onboardingCompleted: true });
         
@@ -72,6 +79,16 @@ const Summary: React.FC = () => {
         <div className="summary-item">
           <div className="summary-label">WoW Installation</div>
           <div className="summary-value">{onboardingData.wowPath}</div>
+        </div>
+
+        <div className="summary-item">
+          <div className="summary-label">realmd.exe</div>
+          <div className="summary-value">{onboardingData.realmdPath}</div>
+        </div>
+
+        <div className="summary-item">
+          <div className="summary-label">mangosd.exe</div>
+          <div className="summary-value">{onboardingData.mangosdPath}</div>
         </div>
       </div>
 

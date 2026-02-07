@@ -30,10 +30,8 @@ export class ConfigService {
   }
 
   async initialize(): Promise<void> {
-    // Check if encryption is available early to provide better error messages
     if (!safeStorage.isEncryptionAvailable()) {
       console.warn('Encryption is not available. The application may not function correctly without secure password storage.');
-      // Continue initialization but warn about missing encryption
     }
 
     try {
@@ -108,22 +106,17 @@ export class ConfigService {
       const content = JSON.stringify(storage, null, 2);
       
       try {
-        // Write with restrictive permissions from the start (Unix-like systems)
         await fs.writeFile(tempPath, content, { encoding: 'utf-8', mode: 0o600 });
       } catch (error) {
-        // If mode option fails (e.g., on Windows), write normally
         await fs.writeFile(tempPath, content, 'utf-8');
       }
       
-      // Set restrictive permissions if not set during write
       try {
         await fs.chmod(tempPath, 0o600);
       } catch (error) {
-        // chmod may fail on Windows or other platforms, but that's acceptable
         console.warn('Failed to set restrictive file permissions on secure storage; continuing without changing permissions.');
       }
       
-      // Atomically rename temp file to target file
       await fs.rename(tempPath, this.secureStoragePath);
     });
 
@@ -148,7 +141,6 @@ export class ConfigService {
   }
 
   private async setEncryptedPassword(key: string, password: string): Promise<void> {
-    // Validate password input
     if (!password || password.length === 0) {
       throw new ConfigError('Password cannot be empty');
     }
@@ -157,8 +149,6 @@ export class ConfigService {
       throw new ConfigError(`Password is too long. Maximum length is ${this.MAX_PASSWORD_LENGTH} characters.`);
     }
 
-    // Validate key to prevent injection issues
-    // Check for null bytes (string termination) and path separators (path traversal)
     if (!key || typeof key !== 'string' || key.includes('\0') || key.includes('/') || key.includes('\\')) {
       throw new ConfigError('Invalid password key format');
     }
@@ -202,6 +192,8 @@ export class ConfigService {
 
         updatedProfiles.push({
           ...profile,
+          realmdPath: profile.realmdPath ?? '',
+          mangosdPath: profile.mangosdPath ?? '',
           database: {
             ...profile.database,
             password: resolvedPassword,

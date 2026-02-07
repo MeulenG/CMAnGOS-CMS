@@ -30,8 +30,21 @@ export interface ServerProfile {
   expansion: Expansion;
   database: DatabaseConfig;
   wowPath: string;
+  realmdPath: string;
+  mangosdPath: string;
   createdAt: string;
   lastUsed: string;
+}
+
+export type ServerProcessName = 'realmd' | 'mangosd';
+
+export interface ServerProcessStatus {
+  name: ServerProcessName;
+  status: 'running' | 'stopped' | 'unknown';
+  pid?: number;
+  executablePath?: string;
+  startedByApp?: boolean;
+  error?: string;
 }
 
 export interface AppSettings {
@@ -86,6 +99,14 @@ export const IPC_CHANNELS = {
   WOW_VALIDATE_PATH: 'wow:validate-path',
   WOW_LAUNCH: 'wow:launch',
   WOW_BROWSE_PATH: 'wow:browse-path',
+
+  // Server process operations
+  SERVER_STATUS: 'server:status',
+  SERVER_START: 'server:start',
+  SERVER_STOP: 'server:stop',
+  SERVER_RESTART: 'server:restart',
+  SERVER_VALIDATE_PATHS: 'server:validate-paths',
+  SERVER_LOGS_READ: 'server:logs-read',
   
   // Update operations
   UPDATE_CHECK: 'update:check',

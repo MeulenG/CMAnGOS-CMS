@@ -40,7 +40,7 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
         }
 
         if (result.success && result.data) {
-          setServerStatus(result.data as ServerProcessStatus[]);
+          setServerStatus(result.data);
           setServerError(null);
         } else {
           setServerError(result.error || 'Failed to load server status');
@@ -80,7 +80,7 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
         }
 
         if (result.success && result.data) {
-          setLogs(result.data as ServerLogsSnapshot);
+          setLogs(result.data);
         } else {
           setServerError(result.error || 'Failed to load logs');
         }
@@ -117,7 +117,7 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
       const result = await window.electronAPI.server[action](payload);
 
       if (result.success && result.data) {
-        setServerStatus(result.data as ServerProcessStatus[]);
+        setServerStatus(result.data);
       } else {
         setServerError(result.error || `Failed to ${action} server processes`);
       }

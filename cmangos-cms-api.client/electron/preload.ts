@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { ServerLogsSnapshot, ServerProcessStatus } from './types/config.types.js';
 
 console.log('========================================');
 console.log('PRELOAD SCRIPT IS RUNNING');
@@ -61,12 +62,12 @@ export interface ElectronAPI {
 
   // Server operations
   server: {
-    status: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<Array<Record<string, unknown>>>>;
-    start: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) => Promise<IPCResult<Array<Record<string, unknown>>>>;
-    stop: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<Array<Record<string, unknown>>>>;
-    restart: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) => Promise<IPCResult<Array<Record<string, unknown>>>>;
+    status: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    start: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    stop: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    restart: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) => Promise<IPCResult<ServerProcessStatus[]>>;
     validatePaths: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<{ realmdPath: string; mangosdPath: string }>>;
-    readLogs: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<Record<string, { stdout: string; stderr: string }>>>;
+    readLogs: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<ServerLogsSnapshot>>;
   };
 }
 

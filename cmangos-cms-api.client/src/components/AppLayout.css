@@ -421,6 +421,28 @@
   background: none;
 }
 
+.btn-compact {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  border-width: 1px;
+}
+
+.server-control-card .btn,
+.server-control-actions .btn,
+.server-control-header .btn {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.72rem;
+  border-width: 1px;
+}
+
+.server-control-view-logs {
+  padding: 0.25rem 0.6rem;
+  min-width: 0;
+  width: auto;
+  align-self: flex-start;
+}
+
 .btn-primary {
   background: linear-gradient(180deg, #d4a234 0%, #a67d1a 100%);
   color: #0a0604;

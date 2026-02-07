@@ -4,6 +4,7 @@ import './Onboarding.css';
 
 const DatabaseConfig: React.FC = () => {
   const { onboardingData, updateDatabase, nextStep, previousStep } = useOnboarding();
+  const backendURL = 'http://localhost:5023';
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [errors, setErrors] = useState({
@@ -60,14 +61,30 @@ const DatabaseConfig: React.FC = () => {
     setTestResult(null);
 
     try {
-      // TODO: Call database validation IPC when implemented
-      // For now, simulate a test
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setTestResult({
-        success: true,
-        message: 'Connection successful! Databases found.'
+      const response = await fetch(`${backendURL}/api/Database/test-connection`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          host: onboardingData.database.host,
+          port: onboardingData.database.port,
+          username: onboardingData.database.username,
+          password: onboardingData.database.password
+        })
       });
+
+      const data = await response.json();
+
+      if (response.ok && data?.success) {
+        setTestResult({
+          success: true,
+          message: data.message || 'Connection successful!'
+        });
+      } else {
+        setTestResult({
+          success: false,
+          message: data?.message || data?.error || 'Connection failed'
+        });
+      }
     } catch (error) {
       setTestResult({
         success: false,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { ServerProfile, IPCResult } from '../types/app.types';
+import type { ServerProfile } from '../types/app.types';
+import { getJson } from '../utils/api';
 
 /**
  * Custom hook to load and manage the active server profile
@@ -18,27 +19,19 @@ export const useActiveProfile = () => {
     
     try {
       // Get active profile ID
-      const activeIdResult: IPCResult<string | null> = await window.electronAPI.config.getActiveProfile();
-      
-      if (!activeIdResult.success) {
-        throw new Error(activeIdResult.error || 'Failed to get active profile ID');
-      }
+      const activeProfileResult = await getJson<{ activeProfileId: string | null }>('/config/active-profile');
 
-      if (!activeIdResult.data) {
+      if (!activeProfileResult.activeProfileId) {
         // No active profile set
         setActiveProfile(null);
         return;
       }
 
       // Get all profiles
-      const profilesResult = await window.electronAPI.profile.getAll();
-      
-      if (!profilesResult.success) {
-        throw new Error(profilesResult.error || 'Failed to load profiles');
-      }
+      const profiles = await getJson<ServerProfile[]>('/profile');
 
       // Find the active profile
-      const profile = (profilesResult.data as ServerProfile[] | undefined)?.find(p => p.id === activeIdResult.data);
+      const profile = profiles.find(p => p.id === activeProfileResult.activeProfileId);
       setActiveProfile(profile || null);
       
     } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useActiveProfile } from '../hooks/useActiveProfile';
 import type { ServerLogsSnapshot, ServerProcessStatus } from '../types/app.types';
+import { postJson } from '../utils/api';
 import '../components/AppLayout.css';
 
 interface ServerLogsProps {
@@ -30,7 +31,7 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
 
     const loadStatus = async () => {
       try {
-        const result = await window.electronAPI.server.status({
+        const data = await postJson<ServerProcessStatus[]>('/server/status', {
           realmdPath: activeProfile.realmdPath,
           mangosdPath: activeProfile.mangosdPath
         });
@@ -39,12 +40,8 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
           return;
         }
 
-        if (result.success && result.data) {
-          setServerStatus(result.data);
-          setServerError(null);
-        } else {
-          setServerError(result.error || 'Failed to load server status');
-        }
+        setServerStatus(data);
+        setServerError(null);
       } catch (error) {
         if (mounted) {
           setServerError((error as Error).message || 'Failed to load server status');
@@ -70,7 +67,7 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
 
     const loadLogs = async () => {
       try {
-        const result = await window.electronAPI.server.readLogs({
+        const data = await postJson<ServerLogsSnapshot>('/server/logs', {
           realmdPath: activeProfile.realmdPath,
           mangosdPath: activeProfile.mangosdPath
         });
@@ -79,11 +76,7 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
           return;
         }
 
-        if (result.success && result.data) {
-          setLogs(result.data);
-        } else {
-          setServerError(result.error || 'Failed to load logs');
-        }
+        setLogs(data);
       } catch (error) {
         if (mounted) {
           setServerError((error as Error).message || 'Failed to load logs');
@@ -114,13 +107,8 @@ const ServerLogs: React.FC<ServerLogsProps> = ({ onNavigate }) => {
         mangosdPath: activeProfile.mangosdPath,
         showConsole: action !== 'stop' ? showConsole : undefined
       };
-      const result = await window.electronAPI.server[action](payload);
-
-      if (result.success && result.data) {
-        setServerStatus(result.data);
-      } else {
-        setServerError(result.error || `Failed to ${action} server processes`);
-      }
+      const data = await postJson<ServerProcessStatus[]>(`/server/${action}`, payload);
+      setServerStatus(data);
     } catch (error) {
       setServerError((error as Error).message || `Failed to ${action} server processes`);
     } finally {

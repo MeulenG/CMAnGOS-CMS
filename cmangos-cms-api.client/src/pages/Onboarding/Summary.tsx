@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
-import { ExpansionLabels } from '../../../electron/types/config.types';
+import { ExpansionLabels } from '../../types/app.types';
+import { postJson } from '../../utils/api';
 import './Onboarding.css';
 
 const Summary: React.FC = () => {
@@ -13,8 +14,8 @@ const Summary: React.FC = () => {
     setError(null);
 
     try {
-      // Create the profile via IPC
-      const result = await window.electronAPI.profile.create({
+      // Create the profile via backend
+      const result = await postJson<{ id?: string }>('/profile', {
         name: onboardingData.profileName,
         expansion: onboardingData.expansion!,
         database: onboardingData.database,
@@ -23,20 +24,15 @@ const Summary: React.FC = () => {
         mangosdPath: onboardingData.mangosdPath
       });
 
-      if (result.success) {
-        const newProfile = result.data as { id?: string } | undefined;
-        if (newProfile?.id) {
-          await window.electronAPI.config.setActiveProfile(newProfile.id);
-        }
-
-        // Mark onboarding as completed
-        await window.electronAPI.config.save({ onboardingCompleted: true });
-        
-        // Redirect to main app
-        window.location.href = '/';
-      } else {
-        setError(result.error || 'Failed to create profile');
+      if (result?.id) {
+        await postJson('/config/active-profile', { activeProfileId: result.id });
       }
+
+      // Mark onboarding as completed
+      await postJson('/config', { onboardingCompleted: true });
+      
+      // Redirect to main app
+      window.location.href = '/';
     } catch (err) {
       setError((err as Error).message || 'An unexpected error occurred');
     } finally {

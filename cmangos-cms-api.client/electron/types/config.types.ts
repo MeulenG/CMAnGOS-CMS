@@ -47,6 +47,16 @@ export interface ServerProcessStatus {
   error?: string;
 }
 
+export interface ServerLogOutput {
+  stdout: string;
+  stderr: string;
+}
+
+export interface ServerLogsSnapshot {
+  realmd: ServerLogOutput;
+  mangosd: ServerLogOutput;
+}
+
 export interface AppSettings {
   autoUpdate: boolean;
   launchOnStartup: boolean;

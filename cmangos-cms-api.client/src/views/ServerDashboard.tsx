@@ -32,7 +32,7 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
         }
 
         if (result.success && result.data) {
-          setServerStatus(result.data as ServerProcessStatus[]);
+          setServerStatus(result.data);
           setServerError(null);
         } else {
           setServerError(result.error || 'Failed to load server status');
@@ -69,7 +69,7 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
       const result = await window.electronAPI.server[action](payload);
 
       if (result.success && result.data) {
-        setServerStatus(result.data as ServerProcessStatus[]);
+        setServerStatus(result.data);
       } else {
         setServerError(result.error || `Failed to ${action} server processes`);
       }

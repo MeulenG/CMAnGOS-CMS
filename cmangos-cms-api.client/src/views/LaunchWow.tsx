@@ -6,29 +6,69 @@ const LaunchWow: React.FC = () => {
   const { activeProfile } = useActiveProfile();
   const [launching, setLaunching] = useState(false);
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+  const [launchResult, setLaunchResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
+    if (!activeProfile) {
+      return;
+    }
+
     checkServerStatus();
-  }, []);
+    const interval = setInterval(checkServerStatus, 5000);
+    return () => clearInterval(interval);
+  }, [activeProfile]);
 
   const checkServerStatus = async () => {
-    // TODO: Implement actual server status check
-    setTimeout(() => {
-      setServerStatus('online');
-    }, 1000);
+    if (!activeProfile) {
+      return;
+    }
+
+    setServerStatus('checking');
+
+    try {
+      const result = await window.electronAPI.server.status({
+        realmdPath: activeProfile.realmdPath,
+        mangosdPath: activeProfile.mangosdPath
+      });
+
+      if (!result.success || !result.data) {
+        setServerStatus('offline');
+        return;
+      }
+
+      const statuses = result.data as Array<{ status?: string }>;
+      const allRunning = statuses.length > 0 && statuses.every((status) => status.status === 'running');
+      setServerStatus(allRunning ? 'online' : 'offline');
+    } catch (error) {
+      console.error('Failed to check server status:', error);
+      setServerStatus('offline');
+    }
   };
 
   const handleLaunch = async () => {
     if (!activeProfile) return;
 
     setLaunching(true);
+    setLaunchResult(null);
     try {
-      // TODO: Implement WoW launch via IPC
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert('WoW launcher will be implemented with IPC handlers');
+      const result = await window.electronAPI.wow.launch(activeProfile.wowPath);
+      if (result.success) {
+        setLaunchResult({
+          success: true,
+          message: 'WoW launched successfully.'
+        });
+      } else {
+        setLaunchResult({
+          success: false,
+          message: result.error || 'Failed to launch WoW'
+        });
+      }
     } catch (error) {
       console.error('Failed to launch WoW:', error);
-      alert('Failed to launch WoW: ' + (error as Error).message);
+      setLaunchResult({
+        success: false,
+        message: (error as Error).message || 'Failed to launch WoW'
+      });
     } finally {
       setLaunching(false);
     }
@@ -94,6 +134,12 @@ const LaunchWow: React.FC = () => {
         {serverStatus === 'offline' && (
           <p style={{ marginTop: '1rem', color: '#ff6666' }}>
             Server is currently offline. Please start the server first.
+          </p>
+        )}
+
+        {launchResult && (
+          <p style={{ marginTop: '1rem', color: launchResult.success ? '#66ff66' : '#ff6666' }}>
+            {launchResult.success ? '✓ ' : '✗ '}{launchResult.message}
           </p>
         )}
       </div>

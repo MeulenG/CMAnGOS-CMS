@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useActiveProfile } from '../hooks/useActiveProfile';
+import type { ServerProcessStatus } from '../types/app.types';
 import '../components/AppLayout.css';
 
 interface ServerDashboardProps {
@@ -8,6 +9,105 @@ interface ServerDashboardProps {
 
 const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
   const { activeProfile, loading } = useActiveProfile();
+  const [serverStatus, setServerStatus] = useState<ServerProcessStatus[]>([]);
+  const [serverBusy, setServerBusy] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeProfile) {
+      return;
+    }
+
+    let mounted = true;
+
+    const loadStatus = async () => {
+      try {
+        const result = await window.electronAPI.server.status({
+          realmdPath: activeProfile.realmdPath,
+          mangosdPath: activeProfile.mangosdPath
+        });
+
+        if (!mounted) {
+          return;
+        }
+
+        if (result.success && result.data) {
+          setServerStatus(result.data as ServerProcessStatus[]);
+          setServerError(null);
+        } else {
+          setServerError(result.error || 'Failed to load server status');
+        }
+      } catch (error) {
+        if (mounted) {
+          setServerError((error as Error).message || 'Failed to load server status');
+        }
+      }
+    };
+
+    loadStatus();
+    const interval = setInterval(loadStatus, 5000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [activeProfile]);
+
+  const handleServerAction = async (action: 'start' | 'stop' | 'restart') => {
+    if (!activeProfile) {
+      return;
+    }
+
+    setServerBusy(true);
+    setServerError(null);
+
+    try {
+      const payload = {
+        realmdPath: activeProfile.realmdPath,
+        mangosdPath: activeProfile.mangosdPath
+      };
+      const result = await window.electronAPI.server[action](payload);
+
+      if (result.success && result.data) {
+        setServerStatus(result.data as ServerProcessStatus[]);
+      } else {
+        setServerError(result.error || `Failed to ${action} server processes`);
+      }
+    } catch (error) {
+      setServerError((error as Error).message || `Failed to ${action} server processes`);
+    } finally {
+      setServerBusy(false);
+    }
+  };
+
+  const getStatusColor = (status?: ServerProcessStatus['status']) => {
+    if (status === 'running') return '#66ff66';
+    if (status === 'stopped') return '#ff6666';
+    return '#ffaa00';
+  };
+
+  const renderServerStatus = (name: ServerProcessStatus['name']) => {
+    const status = serverStatus.find((entry) => entry.name === name);
+    const path = name === 'realmd' ? activeProfile?.realmdPath : activeProfile?.mangosdPath;
+    const label = name === 'realmd' ? 'realmd.exe' : 'mangosd.exe';
+    const display = !path?.trim()
+      ? 'Not configured'
+      : status?.status === 'running'
+        ? 'Running'
+        : status?.status === 'stopped'
+          ? 'Stopped'
+          : 'Unknown';
+
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <div style={{ color: '#d4a234' }}>{label}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ color: getStatusColor(status?.status), fontSize: '1.2rem' }}>●</span>
+          <span style={{ color: '#b89968' }}>{display}</span>
+        </div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -38,34 +138,60 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
       </div>
 
       <div className="grid-3">
-        <div className="card">
-          <div className="card-title">Server Status</div>
-          <div style={{ fontSize: '2rem', textAlign: 'center', margin: '1rem 0' }}>
-            <span style={{ color: '#66ff66' }}>●</span>
+        <div className="card server-control-card">
+          <div className="server-control-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div className="card-title">Server Control</div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
+              <button
+                className="btn btn-secondary btn-compact server-control-view-logs"
+                onClick={() => onNavigate?.('server-logs')}
+                style={{
+                  padding: '0.15rem 0.45rem',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.01em',
+                  lineHeight: 1.1,
+                  minWidth: 0,
+                  width: 'fit-content',
+                  alignSelf: 'flex-start'
+                }}
+              >
+                View Logs
+              </button>
+            </div>
           </div>
-          <p style={{ textAlign: 'center', color: '#b89968', margin: 0 }}>
-            Backend Online
-          </p>
+          <div style={{ marginTop: '0.75rem' }}>
+            {renderServerStatus('realmd')}
+            {renderServerStatus('mangosd')}
+          </div>
+          {serverError && (
+            <p style={{ color: '#ff6666', marginTop: '0.5rem', marginBottom: 0 }}>{serverError}</p>
+          )}
+          <div className="server-control-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-secondary btn-compact"
+              onClick={() => handleServerAction('start')}
+              disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
+            >
+              Start
+            </button>
+            <button
+              className="btn btn-secondary btn-compact"
+              onClick={() => handleServerAction('stop')}
+              disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
+            >
+              Stop
+            </button>
+            <button
+              className="btn btn-primary btn-compact"
+              onClick={() => handleServerAction('restart')}
+              disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
+            >
+              Restart
+            </button>
+          </div>
         </div>
 
-        <div className="card">
-          <div className="card-title">Database</div>
-          <div style={{ color: '#b89968', fontSize: '0.9rem' }}>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>Host:</strong> {activeProfile.database.host}:{activeProfile.database.port}
-            </div>
-            <div>
-              <strong>User:</strong> {activeProfile.database.username}
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-title">WoW Client</div>
-          <div style={{ color: '#b89968', fontSize: '0.9rem', wordBreak: 'break-all' }}>
-            {activeProfile.wowPath}
-          </div>
-        </div>
+        
       </div>
 
       <div className="card">

@@ -5,6 +5,7 @@ import LaunchWow from './views/LaunchWow';
 import AccountManager from './views/AccountManager';
 import PatchNotes from './views/PatchNotes';
 import AppSettings from './views/AppSettings';
+import ServerLogs from './views/ServerLogs';
 import Onboarding from './pages/Onboarding/Onboarding';
 import './App.css';
 
@@ -12,6 +13,8 @@ function App() {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
+  const [forceOnboarding, setForceOnboarding] = useState(false);
+  const [onboardingKey, setOnboardingKey] = useState(0);
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -61,6 +64,8 @@ function App() {
         return <PatchNotes />;
       case 'settings':
         return <AppSettings />;
+      case 'server-logs':
+        return <ServerLogs onNavigate={setCurrentView} />;
       default:
         return <ServerDashboard />;
     }
@@ -83,13 +88,20 @@ function App() {
   }
 
   // Show onboarding if not complete
-  if (!isOnboardingComplete) {
-    return <Onboarding />;
+  if (!isOnboardingComplete || forceOnboarding) {
+    return <Onboarding key={onboardingKey} />;
   }
 
   // Show desktop app
   return (
-    <AppLayout currentView={currentView} onNavigate={setCurrentView}>
+    <AppLayout
+      currentView={currentView}
+      onNavigate={setCurrentView}
+      onAddProfile={() => {
+        setOnboardingKey((prev) => prev + 1);
+        setForceOnboarding(true);
+      }}
+    >
       {renderView()}
     </AppLayout>
   );

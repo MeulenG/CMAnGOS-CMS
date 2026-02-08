@@ -52,10 +52,9 @@ builder.Services.AddAuthentication(ApiKeyAuthenticationDefaults.Scheme)
     .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationDefaults.Scheme, _ => { });
 builder.Services.AddAuthorization(options =>
 {
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .AddAuthenticationSchemes(ApiKeyAuthenticationDefaults.Scheme)
-        .RequireAuthenticatedUser()
-        .Build();
+    options.AddPolicy("ApiPolicy", policy =>
+        policy.AddAuthenticationSchemes(ApiKeyAuthenticationDefaults.Scheme)
+              .RequireAuthenticatedUser());
 });
 builder.Services.AddCors(options =>
 {
@@ -79,13 +78,12 @@ app.UseStaticFiles();
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 
-app.UseCors(options =>
-     options.SetIsOriginAllowed(origin => true)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials());
-
 app.UseRouting();
+
+app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 if (builder.Configuration.GetValue<bool>("AllowForwarding") == true) {
@@ -100,17 +98,11 @@ if (app.Environment.IsDevelopment())
 
 // Remove HTTPS redirection for localhost desktop app
 
-app.UseWhen(
-    context => !context.Request.Path.StartsWithSegments("/swagger") &&
-        !context.Request.Path.StartsWithSegments("/api/health") &&
-        !HttpMethods.IsOptions(context.Request.Method),
-    branch =>
-    {
-        branch.UseAuthentication();
-        branch.UseAuthorization();
-    });
+app.MapControllers().RequireAuthorization("ApiPolicy").RequireCors("CorsPolicy");
 
-app.MapControllers();
+app.MapMethods("/api/{**path}", new[] { "OPTIONS" }, () => Results.NoContent())
+    .AllowAnonymous()
+    .RequireCors("CorsPolicy");
 
 app.MapFallbackToFile("/index.html");
 

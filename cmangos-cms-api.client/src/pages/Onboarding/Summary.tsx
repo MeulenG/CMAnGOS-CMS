@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
-import { ExpansionLabels } from '../../../electron/types/config.types';
+import { ExpansionLabels } from '../../types/app.types';
+import { postJson } from '../../utils/api';
 import './Onboarding.css';
 
 const Summary: React.FC = () => {
@@ -13,23 +14,25 @@ const Summary: React.FC = () => {
     setError(null);
 
     try {
-      // Create the profile via IPC
-      const result = await window.electronAPI.profile.create({
+      // Create the profile via backend
+      const result = await postJson<{ id?: string }>('/profile', {
         name: onboardingData.profileName,
         expansion: onboardingData.expansion!,
         database: onboardingData.database,
-        wowPath: onboardingData.wowPath
+        wowPath: onboardingData.wowPath,
+        realmdPath: onboardingData.realmdPath,
+        mangosdPath: onboardingData.mangosdPath
       });
 
-      if (result.success) {
-        // Mark onboarding as completed
-        await window.electronAPI.config.save({ onboardingCompleted: true });
-        
-        // Redirect to main app
-        window.location.href = '/';
-      } else {
-        setError(result.error || 'Failed to create profile');
+      if (result?.id) {
+        await postJson('/config/active-profile', { activeProfileId: result.id });
       }
+
+      // Mark onboarding as completed
+      await postJson('/config', { onboardingCompleted: true });
+      
+      // Redirect to main app
+      window.location.href = '/';
     } catch (err) {
       setError((err as Error).message || 'An unexpected error occurred');
     } finally {
@@ -72,6 +75,16 @@ const Summary: React.FC = () => {
         <div className="summary-item">
           <div className="summary-label">WoW Installation</div>
           <div className="summary-value">{onboardingData.wowPath}</div>
+        </div>
+
+        <div className="summary-item">
+          <div className="summary-label">realmd.exe</div>
+          <div className="summary-value">{onboardingData.realmdPath}</div>
+        </div>
+
+        <div className="summary-item">
+          <div className="summary-label">mangosd.exe</div>
+          <div className="summary-value">{onboardingData.mangosdPath}</div>
         </div>
       </div>
 

@@ -1,12 +1,24 @@
+
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using CMAnGOS_CMS_API.Server.Authentication;
 using CMAnGOS_CMS_API.Server.Data;
+using CMAnGOS_CMS_API.Server.Middleware;
 using CMAnGOS_CMS_API.Server.Services;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls("http://localhost:5023");
 
 builder.Services.AddSingleton<ICMAnGOSDetectionService, CMAnGOSDetectionService>();
+if (OperatingSystem.IsWindows()) {
+    builder.Services.AddSingleton<IServerControlService, ServerControlService>();
+    builder.Services.AddSingleton<IWowLaunchService, WowLaunchService>();
+    builder.Services.AddSingleton<IAppConfigService, AppConfigService>();
+}
+
 
 var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
 var detectionLogger = loggerFactory.CreateLogger<CMAnGOSDetectionService>();
@@ -36,10 +48,18 @@ builder.Services.AddDbContext<MangosContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAuthentication(ApiKeyAuthenticationDefaults.Scheme)
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationDefaults.Scheme, _ => { });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ApiPolicy", policy =>
+        policy.AddAuthenticationSchemes(ApiKeyAuthenticationDefaults.Scheme)
+              .RequireAuthenticatedUser());
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-        builder.AllowAnyOrigin()
+        builder.WithOrigins("http://localhost:5173", "http://localhost:5023")
             .AllowAnyMethod()
             .AllowAnyHeader()
     );
@@ -56,6 +76,16 @@ logger.LogInformation($"Mangos Database: {expansionPrefix}mangos");
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+app.UseRouting();
+
+app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+
 if (builder.Configuration.GetValue<bool>("AllowForwarding") == true) {
     app.UseForwardedHeaders();
 }
@@ -68,13 +98,11 @@ if (app.Environment.IsDevelopment())
 
 // Remove HTTPS redirection for localhost desktop app
 
-app.UseAuthentication();
+app.MapControllers().RequireAuthorization("ApiPolicy").RequireCors("CorsPolicy");
 
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.UseCors("CorsPolicy");
+app.MapMethods("/api/{**path}", new[] { "OPTIONS" }, () => Results.NoContent())
+    .AllowAnonymous()
+    .RequireCors("CorsPolicy");
 
 app.MapFallbackToFile("/index.html");
 

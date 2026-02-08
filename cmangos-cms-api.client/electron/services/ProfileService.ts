@@ -143,6 +143,14 @@ export class ProfileService {
       errors.push('WoW client path is required');
     }
 
+    if (!profile.realmdPath || profile.realmdPath.trim().length === 0) {
+      errors.push('realmd.exe path is required');
+    }
+
+    if (!profile.mangosdPath || profile.mangosdPath.trim().length === 0) {
+      errors.push('mangosd.exe path is required');
+    }
+
     return {
       valid: errors.length === 0,
       errors

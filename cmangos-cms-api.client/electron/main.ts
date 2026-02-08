@@ -6,8 +6,12 @@ import * as fs from 'fs';
 import { existsSync } from 'fs';
 import { ConfigService } from './services/ConfigService.js';
 import { ProfileService } from './services/ProfileService.js';
+import { WowService } from './services/WowService.js';
+import { ServerControlService } from './services/ServerControlService.js';
 import { ConfigHandler } from './ipc/config-handler.js';
 import { ProfileHandler } from './ipc/profile-handler.js';
+import { WowHandler } from './ipc/wow-handler.js';
+import { ServerHandler } from './ipc/server-handler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,8 +22,12 @@ let backendProcess: ChildProcess | null = null;
 // Services
 let configService: ConfigService;
 let profileService: ProfileService;
+let wowService: WowService;
+let serverControlService: ServerControlService;
 let configHandler: ConfigHandler;
 let profileHandler: ProfileHandler;
+let wowHandler: WowHandler;
+let serverHandler: ServerHandler;
 
 const API_PORT = 5023;
 const API_URL = `http://localhost:${API_PORT}`;
@@ -44,11 +52,11 @@ function getBackendPath(): string {
 async function waitForBackend(maxAttempts = 30): Promise<boolean> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const response = await fetch(`${API_URL}/swagger/index.html`, { 
-        method: 'HEAD',
+      const response = await fetch(`${API_URL}/api/health`, {
+        method: 'GET',
         signal: AbortSignal.timeout(1000)
       });
-      if (response.ok || response.status === 404) {
+      if (response.ok || response.status === 404 || response.status === 401) {
         return true;
       }
     } catch (error) {
@@ -71,7 +79,8 @@ async function killExistingBackend(): Promise<void> {
       
       findProcess.on('close', () => {
         console.log('Cleaned up any existing backend processes');
-        setTimeout(resolve, 500); // Wait a bit for the port to be released
+        // Wait a bit for the port to be released
+        setTimeout(resolve, 500);
       });
     } else {
       // On Unix-like systems, use lsof
@@ -88,7 +97,7 @@ async function killExistingBackend(): Promise<void> {
   });
 }
 
-// Start the ASP.NET Core backend
+// Start the backend
 async function startBackend(): Promise<void> {
   // First, kill any existing backend processes
   await killExistingBackend();
@@ -316,10 +325,14 @@ app.whenReady().then(async () => {
     await configService.initialize();
     
     profileService = new ProfileService(configService);
+    wowService = new WowService();
+    serverControlService = new ServerControlService();
     
     // Initialize IPC handlers
     configHandler = new ConfigHandler(configService);
     profileHandler = new ProfileHandler(profileService);
+    wowHandler = new WowHandler(wowService);
+    serverHandler = new ServerHandler(serverControlService);
     
     console.log('Services initialized successfully');
     

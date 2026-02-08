@@ -30,6 +30,11 @@ namespace CMAnGOS_CMS_API.Server.Authentication
 
 		protected override Task<AuthenticateResult> HandleAuthenticateAsync()
 		{
+			if (HttpMethods.IsOptions(Request.Method))
+			{
+				return Task.FromResult(AuthenticateResult.NoResult());
+			}
+
 			if (Request.Path.StartsWithSegments("/swagger") || Request.Path.StartsWithSegments("/api/health"))
 			{
 				return Task.FromResult(AuthenticateResult.NoResult());

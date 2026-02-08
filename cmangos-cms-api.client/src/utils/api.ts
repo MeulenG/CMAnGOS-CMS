@@ -1,5 +1,5 @@
 const API_BASE_URL = 'http://localhost:5023/api';
-const API_KEY = '9853040984598034508924350834589';
+const API_KEY = process.env.VITE_API_KEY;
 
 type ApiErrorResponse = {
   error?: string;

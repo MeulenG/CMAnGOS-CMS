@@ -1,1 +1,7 @@
 .vs/
+**/bin/
+**/obj/
+**/node_modules/
+cmangos-cms-api.client/dist/
+cmangos-cms-api.client/dist-electron/
+cmangos-cms-api.client/release/

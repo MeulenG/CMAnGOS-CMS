@@ -94,6 +94,17 @@ Configure your MySQL connection strings in `CMAnGOS-CMS-API.Server/appsettings.j
 
 The `{prefix}` placeholder will be automatically replaced with the detected expansion prefix (classic, tbc, or wotlk).
 
+### ClassicMangosMap Dashboard
+
+To embed the ClassicMangosMap dashboard component, run the map project separately and set its URL in the frontend:
+
+```bash
+cd cmangos-cms-api.client
+echo "VITE_CLASSIC_MANGOS_MAP_URL=http://localhost/playermap/" > .env.local
+```
+
+The dashboard will show the live map if the URL is configured.
+
 ## Project Structure
 
 ```

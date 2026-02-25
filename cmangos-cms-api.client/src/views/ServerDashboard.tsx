@@ -92,14 +92,35 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
 
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <div style={{ color: '#d4a234' }}>{label}</div>
+        <div style={{ color: '#c9a84c' }}>{label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ color: getStatusColor(status?.status), fontSize: '1.2rem' }}>●</span>
-          <span style={{ color: '#b89968' }}>{display}</span>
+          <span style={{ color: '#8b8d95' }}>{display}</span>
         </div>
       </div>
     );
   };
+
+  const newsItems = [
+    {
+      id: 'news-1',
+      title: 'Realm Stability Improvements',
+      description: 'Core process startup and reconnect handling has been refined for smoother uptime.',
+      action: () => onNavigate?.('server-logs')
+    },
+    {
+      id: 'news-2',
+      title: 'Account Tools Refreshed',
+      description: 'Open the account panel to manage new users, moderation, and GM level updates.',
+      action: () => onNavigate?.('accounts')
+    },
+    {
+      id: 'news-3',
+      title: 'Latest Changelog Entries',
+      description: 'Review newly published release notes and update details for your selected repository.',
+      action: () => onNavigate?.('patchnotes')
+    }
+  ];
 
   if (loading) {
     return (
@@ -125,80 +146,114 @@ const ServerDashboard: React.FC<ServerDashboardProps> = ({ onNavigate }) => {
   return (
     <div className="app-content">
       <div className="view-header">
-        <h1 className="view-title">Dashboard</h1>
-        <p className="view-subtitle">Welcome to {activeProfile.name}</p>
+        <h1 className="view-title">Control Center</h1>
+        <p className="view-subtitle">Welcome back, {activeProfile.name}</p>
       </div>
 
-      <div className="grid-3">
-        <div className="card server-control-card">
-          <div className="server-control-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div className="card-title">Server Control</div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
-              <button
-                className="btn btn-secondary btn-compact server-control-view-logs"
-                onClick={() => onNavigate?.('server-logs')}
-                style={{
-                  padding: '0.15rem 0.45rem',
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.01em',
-                  lineHeight: 1.1,
-                  minWidth: 0,
-                  width: 'fit-content',
-                  alignSelf: 'flex-start'
-                }}
-              >
+      <div className="card" style={{
+        background: '#1c1e25',
+        overflow: 'hidden'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ color: '#e4ce82', fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.15 }}>CMAnGOS Launcher</div>
+            <p style={{ color: '#8b8d95', marginTop: '0.5rem', maxWidth: '620px' }}>
+              Manage realms, launch the game client, and monitor process status from a unified desktop hub.
+            </p>
+          </div>
+          <button className="btn btn-primary" onClick={() => onNavigate?.('launch')}>
+            Launch WoW
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="card" style={{ marginBottom: 0, minWidth: '300px', flex: '1 1 340px', background: '#16171d' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div className="card-title">Server Status</div>
+              <button className="btn btn-secondary btn-compact" onClick={() => onNavigate?.('server-logs')}>
                 View Logs
               </button>
             </div>
+            <div style={{ marginTop: '0.75rem' }}>
+              {renderServerStatus('realmd')}
+              {renderServerStatus('mangosd')}
+            </div>
+            {serverError && (
+              <p style={{ color: '#ff8d8d', marginTop: '0.5rem', marginBottom: 0 }}>{serverError}</p>
+            )}
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-secondary btn-compact"
+                onClick={() => handleServerAction('start')}
+                disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
+              >
+                Start
+              </button>
+              <button
+                className="btn btn-secondary btn-compact"
+                onClick={() => handleServerAction('stop')}
+                disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
+              >
+                Stop
+              </button>
+              <button
+                className="btn btn-primary btn-compact"
+                onClick={() => handleServerAction('restart')}
+                disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
+              >
+                Restart
+              </button>
+            </div>
           </div>
-          <div style={{ marginTop: '0.75rem' }}>
-            {renderServerStatus('realmd')}
-            {renderServerStatus('mangosd')}
-          </div>
-          {serverError && (
-            <p style={{ color: '#ff6666', marginTop: '0.5rem', marginBottom: 0 }}>{serverError}</p>
-          )}
-          <div className="server-control-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-            <button
-              className="btn btn-secondary btn-compact"
-              onClick={() => handleServerAction('start')}
-              disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
-            >
-              Start
-            </button>
-            <button
-              className="btn btn-secondary btn-compact"
-              onClick={() => handleServerAction('stop')}
-              disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
-            >
-              Stop
-            </button>
-            <button
-              className="btn btn-primary btn-compact"
-              onClick={() => handleServerAction('restart')}
-              disabled={serverBusy || !activeProfile.realmdPath.trim() || !activeProfile.mangosdPath.trim()}
-            >
-              Restart
-            </button>
+
+          <div className="card" style={{ marginBottom: 0, minWidth: '300px', flex: '1 1 300px', background: '#16171d' }}>
+            <div className="card-title">Quick Actions</div>
+            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+              <button className="btn btn-primary" onClick={() => onNavigate?.('launch')}>Play Now</button>
+              <button className="btn btn-secondary" onClick={() => onNavigate?.('accounts')}>Accounts</button>
+              <button className="btn btn-secondary" onClick={() => onNavigate?.('patchnotes')}>Changelogs</button>
+              <button className="btn btn-secondary" onClick={() => onNavigate?.('settings')}>Settings</button>
+            </div>
+            <p style={{ marginTop: '0.75rem', color: '#8b8d95' }}>
+              Realm: {activeProfile.database.host}:{activeProfile.database.port}
+            </p>
           </div>
         </div>
-
-        
       </div>
 
-      <div className="card">
-        <div className="card-title">Quick Actions</div>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-primary" onClick={() => onNavigate?.('launch')}>Launch WoW</button>
-          <button className="btn btn-secondary" onClick={() => onNavigate?.('accounts')}>Create Account</button>
-          <button className="btn btn-secondary" onClick={() => onNavigate?.('patchnotes')}>View Patch Notes</button>
-        </div>
+      <div className="grid-3">
+        {newsItems.map((item, index) => (
+          <div key={item.id} className="card" style={{ marginBottom: 0 }}>
+            <div style={{
+              height: '110px',
+              borderRadius: '6px',
+              marginBottom: '0.75rem',
+              background: index === 0
+                ? 'linear-gradient(135deg, #3d2520 0%, #261a1d 100%)'
+                : index === 1
+                  ? 'linear-gradient(135deg, #1e2a3d 0%, #171d2a 100%)'
+                  : 'linear-gradient(135deg, #2a2338 0%, #1c1826 100%)'
+            }} />
+            <div style={{ color: '#8b8d95', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              CMANGOS UPDATE
+            </div>
+            <div style={{ color: '#dcdee3', fontSize: '0.92rem', fontWeight: 600, marginTop: '0.3rem' }}>
+              {item.title}
+            </div>
+            <p style={{ color: '#6b6d75', marginTop: '0.4rem', lineHeight: 1.5, fontSize: '0.8rem' }}>
+              {item.description}
+            </p>
+            <button className="btn btn-secondary btn-compact" onClick={item.action}>
+              Learn More
+            </button>
+          </div>
+        ))}
       </div>
 
       <div className="card">
         <div className="card-title">Recent Activity</div>
-        <p style={{ color: '#b89968', fontStyle: 'italic' }}>
-          No recent activity to display
+        <p style={{ color: '#6b6d75', fontStyle: 'italic' }}>
+          No recent activity has been recorded for this profile yet.
         </p>
       </div>
     </div>

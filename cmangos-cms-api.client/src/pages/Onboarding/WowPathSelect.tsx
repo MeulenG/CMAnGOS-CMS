@@ -16,9 +16,18 @@ const WowPathSelect: React.FC = () => {
   };
 
   const handleBrowse = async () => {
-    // TODO: Implement file dialog via IPC when handler is ready
-    // For now, just show a placeholder
-    alert('File browser will be implemented with IPC handlers');
+    if (!window.electronAPI?.wow?.browsePath) {
+      setPathError('Browse dialog is unavailable in this build');
+      return;
+    }
+
+    const result = await window.electronAPI.wow.browsePath();
+    if (result.success && result.data?.path) {
+      updateWowPath(result.data.path);
+      setPathError('');
+    } else if (!result.success) {
+      setPathError(result.error || 'Failed to open file dialog');
+    }
   };
 
   const handleValidate = async () => {

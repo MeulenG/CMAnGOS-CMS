@@ -1,554 +1,632 @@
-/**
- * DESKTOP APP LAYOUT STYLES
- * 
- * Complete styling for CMAnGOS Desktop application
- * This file contains all shared styles used across desktop views.
- * 
- * TABLE OF CONTENTS:
- * 1. Layout System (app-layout, app-body, app-main)
- * 2. Top Bar (app-top-bar, draggable region)
- * 3. Sidebar Navigation (app-sidebar, app-nav)
- * 4. Profile Switcher (dropdown component)
- * 5. Content Area (app-content, scrolling)
- * 6. View Headers (view-title, view-subtitle)
- * 7. Card System (card, card-title)
- * 8. Grid Layouts (grid-2, grid-3, responsive)
- * 9. Button System (btn, btn-primary, btn-secondary, btn-danger)
- * 10. Form System (form-group, form-input, form-label)
- * 
- * COLOR PALETTE:
- * - Gold: #d4a234 (primary accent)
- * - Bronze: #b89968 (secondary text)
- * - Dark: #0a0604 (background)
- * - Medium Dark: #1a0e08 (overlays)
- */
+/* ──────────────────────────────────────────────────
+   CMAnGOS Launcher — flat, borderless, dark charcoal
+   ────────────────────────────────────────────────── */
 
-/* ============================================================================
-   1. LAYOUT SYSTEM
-   Main application structure with flex layout
-   ============================================================================ */
-
-.app-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-  background: 
-    linear-gradient(180deg, #0a0604 0%, #1a0e08 50%, #0a0604 100%),
-    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.05"/></svg>');
-  background-attachment: fixed;
+* {
+  box-sizing: border-box;
 }
 
-/* ============================================================================
-   2. TOP BAR
-   Draggable title bar with app branding and actions
-   -webkit-app-region: drag enables window dragging on Electron
-   ============================================================================ */
+:root {
+  --bg-base: #121317;
+  --bg-surface: #18191f;
+  --bg-raised: #1e2026;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-active: rgba(255, 255, 255, 0.08);
+  --text-primary: #dcdee3;
+  --text-secondary: #8b8d95;
+  --accent: #c9a84c;
+  --accent-dim: rgba(201, 168, 76, 0.15);
+  --accent-text: #e4ce82;
+  --divider: rgba(255, 255, 255, 0.06);
+  --shadow-shell: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* ─── Shell ─── */
+
+.app-layout {
+  min-height: 100vh;
+  padding: 18px;
+  background: #0e0f13;
+  color: var(--text-primary);
+  font-family: 'Segoe UI', -apple-system, sans-serif;
+  font-size: 13px;
+}
+
+.app-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-base);
+  box-shadow: var(--shadow-shell);
+}
+
+.app-body {
+  display: flex;
+  min-height: calc(100vh - 36px);
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+}
+
+/* ─── Top Bar ─── */
 
 .app-top-bar {
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--bg-surface);
+}
+
+.app-title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(180deg, rgba(26, 14, 8, 0.95) 0%, rgba(10, 6, 4, 0.95) 100%);
-  border-bottom: 2px solid #d4a234;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-  z-index: 100;
-  -webkit-app-region: drag;
-}
-
-.app-top-bar > * {
-  -webkit-app-region: no-drag;
+  margin-bottom: 10px;
 }
 
 .app-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.app-window-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.window-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.app-top-tabs {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 2px;
 }
 
-.app-title h1 {
-  font-family: 'Cinzel', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #d4a234;
-  margin: 0;
-  letter-spacing: 0.1em;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+.top-tab {
+  border: none;
+  border-radius: 5px;
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
 }
 
-.app-title-icon {
-  font-size: 1.75rem;
-  filter: drop-shadow(0 0 10px rgba(212, 162, 52, 0.5));
+.top-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.top-tab.active {
+  background: var(--bg-active);
+  color: var(--accent-text);
 }
 
 .app-top-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 10px;
+  margin-top: 8px;
 }
 
-.app-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.app-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+/* ─── Sidebar ─── */
 
 .app-sidebar {
-  width: 260px;
-  background: linear-gradient(180deg, rgba(26, 14, 8, 0.95) 0%, rgba(10, 6, 4, 0.95) 100%);
-  border-right: 3px solid rgba(212, 162, 52, 0.4);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.8), inset -1px 0 30px rgba(212, 162, 52, 0.05);
+  width: 232px;
+  padding: 10px;
+  border-right: 1px solid var(--divider);
+  background: var(--bg-surface);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  position: relative;
+  gap: 10px;
 }
 
-.app-sidebar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, transparent 0%, #d4a234 50%, transparent 100%);
-  opacity: 0.6;
+.launcher-profile-card {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--bg-raised);
+}
+
+.launcher-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2c35;
+  color: var(--accent-text);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.launcher-profile-meta {
+  min-width: 0;
+}
+
+.launcher-profile-name {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.launcher-profile-role,
+.launcher-profile-realm {
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  margin-top: 2px;
+}
+
+.launcher-points {
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--bg-raised);
+}
+
+.launcher-point-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+}
+
+.launcher-point-row + .launcher-point-row {
+  margin-top: 6px;
+}
+
+.point-badge {
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.point-badge.muted {
+  color: #5c5e66;
+}
+
+.launcher-shortcuts {
+  display: flex;
+  gap: 4px;
+}
+
+.shortcut-btn {
+  border: none;
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 0.78rem;
+}
+
+.shortcut-btn:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
 }
 
 .app-nav {
+  border-radius: 8px;
+  padding: 4px;
   flex: 1;
-  padding: 2rem 0;
-  margin: 2rem 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  border: 1px solid rgba(212, 162, 52, 0.2);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .app-nav-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 1rem 1.5rem;
-  margin: 0.5rem 1rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #b89968;
-  text-decoration: none;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(212, 162, 52, 0.3);
+  gap: 10px;
+  border: none;
   border-radius: 6px;
-  transition: all 0.3s ease;
+  color: var(--text-secondary);
+  padding: 9px 10px;
+  margin-bottom: 2px;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
+  transition: background 0.15s, color 0.15s;
+  font-size: 0.8rem;
 }
 
-.app-nav-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(212, 162, 52, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.app-nav-item:hover::before {
-  left: 100%;
+.app-nav-item:last-child {
+  margin-bottom: 0;
 }
 
 .app-nav-item:hover {
-  background: rgba(212, 162, 52, 0.15);
-  color: #d4a234;
-  border-color: rgba(212, 162, 52, 0.6);
-  transform: translateX(4px);
-  box-shadow: 0 2px 10px rgba(212, 162, 52, 0.3);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .app-nav-item.active {
-  background: linear-gradient(135deg, rgba(212, 162, 52, 0.25) 0%, rgba(212, 162, 52, 0.15) 100%);
-  color: #ffd700;
-  border-color: #d4a234;
-  box-shadow: inset 0 0 20px rgba(212, 162, 52, 0.2), 0 4px 15px rgba(212, 162, 52, 0.4);
-  font-weight: 700;
+  background: var(--bg-active);
+  color: var(--accent-text);
 }
 
-.app-content {
+.app-nav-item-icon {
+  width: 18px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.sidebar-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.play-button {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 2rem;
-  height: 100%;
+  border: none;
+  border-radius: 6px;
+  padding: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 0.82rem;
+  color: #1a1406;
+  background: linear-gradient(180deg, #dfc05c 0%, #c49a3c 100%);
+  cursor: pointer;
+  transition: filter 0.15s;
+  font-family: inherit;
 }
 
-.app-content::-webkit-scrollbar {
-  width: 10px;
+.play-button:hover {
+  filter: brightness(1.08);
 }
 
-.app-content::-webkit-scrollbar-track {
-  background: #1a0e08;
+.menu-button {
+  width: 38px;
+  border: none;
+  border-radius: 6px;
+  padding: 11px 0;
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.app-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d4a234 0%, #8b6914 100%);
-  border-radius: 5px;
+.menu-button:hover {
+  background: var(--bg-active);
 }
 
-/* ============================================================================
-   4. PROFILE SWITCHER
-   Dropdown component for switching between server profiles
-   ============================================================================ */
+/* ─── Profile Switcher ─── */
 
 .profile-switcher {
   position: relative;
 }
 
 .profile-switcher-button {
+  border: none;
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 8px 12px;
+  min-width: 182px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
-  color: #d4a234;
-  background: rgba(10, 6, 4, 0.8);
-  border: 2px solid rgba(212, 162, 52, 0.3);
-  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.15s;
 }
 
 .profile-switcher-button:hover {
-  border-color: #d4a234;
-  box-shadow: 0 0 15px rgba(212, 162, 52, 0.3);
+  background: var(--bg-active);
 }
 
 .profile-switcher-dropdown {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 4px);
   right: 0;
-  min-width: 250px;
-  background: linear-gradient(180deg, rgba(26, 14, 8, 0.98) 0%, rgba(10, 6, 4, 0.98) 100%);
-  border: 2px solid #d4a234;
-  border-radius: 6px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
-  z-index: 1000;
-  max-height: 400px;
+  width: 280px;
+  max-height: 320px;
   overflow-y: auto;
+  border-radius: 8px;
+  background: var(--bg-raised);
+  z-index: 22;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
 }
 
 .profile-option {
-  padding: 0.875rem 1rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
-  color: #b89968;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--divider);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(212, 162, 52, 0.1);
+  transition: background 0.12s;
 }
 
 .profile-option:last-child {
   border-bottom: none;
 }
 
-.profile-option:hover {
-  background: rgba(212, 162, 52, 0.1);
-  color: #d4a234;
-}
-
+.profile-option:hover,
 .profile-option.active {
-  background: rgba(212, 162, 52, 0.15);
-  color: #d4a234;
-  border-left: 3px solid #d4a234;
+  background: var(--bg-active);
 }
 
 .profile-option-name {
+  font-size: 0.84rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
 }
 
 .profile-option-expansion {
-  font-size: 0.8rem;
-  color: #8b6914;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  font-size: 0.72rem;
 }
 
 .profile-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #d4a234 50%, transparent 100%);
-  margin: 0.5rem 0;
+  background: var(--divider);
 }
 
 .settings-button {
-  padding: 0.5rem 1rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #d4a234;
-  background: rgba(10, 6, 4, 0.8);
-  border: 2px solid rgba(212, 162, 52, 0.3);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 12px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
 }
 
 .settings-button:hover {
-  background: rgba(212, 162, 52, 0.15);
-  border-color: #d4a234;
-  box-shadow: 0 0 15px rgba(212, 162, 52, 0.3);
-  color: #ffd700;
+  background: rgba(201, 168, 76, 0.22);
 }
 
-/* ============================================================================
-   5. VIEW HEADERS
-   Title and subtitle for each view
-   ============================================================================ */
+/* ─── Content ─── */
+
+.app-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
 
 .view-header {
-  margin-bottom: 2rem;
+  margin-bottom: 14px;
 }
 
 .view-title {
-  font-family: 'Cinzel', serif;
-  font-size: 2.5rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #d4a234;
-  margin: 0 0 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: -0.01em;
 }
 
 .view-subtitle {
-  font-family: 'Cinzel', serif;
-  font-size: 1rem;
-  color: #b89968;
-  margin: 0;
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
-/* ============================================================================
-   6. CARD SYSTEM
-   Content cards with gradient backgrounds and borders
-   ============================================================================ */
+/* ─── Cards ─── */
 
 .card {
-  background: linear-gradient(180deg, rgba(26, 14, 8, 0.9) 0%, rgba(10, 6, 4, 0.9) 100%);
-  border: 2px solid rgba(212, 162, 52, 0.3);
   border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  margin-bottom: 1.5rem;
-}
-
-.card:hover {
-  border-color: rgba(212, 162, 52, 0.5);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+  padding: 14px;
+  background: var(--bg-surface);
+  margin-bottom: 12px;
 }
 
 .card-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.25rem;
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #d4a234;
-  margin: 0 0 1rem;
 }
 
-/* ============================================================================
-   7. GRID LAYOUTS
-   Responsive grid system for cards and content
-   ============================================================================ */
+/* ─── Grids ─── */
+
+.grid-2,
+.grid-3 {
+  display: grid;
+  gap: 10px;
+}
 
 .grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-@media (max-width: 1200px) {
-  .grid-3 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+/* ─── Buttons ─── */
 
-@media (max-width: 768px) {
-  .grid-2,
-  .grid-3 {
-    grid-template-columns: 1fr;
-  }
-  
-  .app-sidebar {
-    width: 200px;
-  }
-}
-
-/* ============================================================================
-   8. BUTTON SYSTEM
-   Reusable button styles with WoW-themed gradients and effects
-   ============================================================================ */
-
-/* Button Styles */
 .btn {
-  padding: 0.75rem 1.5rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 14px;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: 2px solid #d4a234;
-  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  background: none;
+  transition: background 0.15s;
+  font-family: inherit;
 }
 
-.btn-compact {
-  padding: 0.35rem 0.8rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
-  border-width: 1px;
-}
-
-.server-control-card .btn,
-.server-control-actions .btn,
-.server-control-header .btn {
-  padding: 0.3rem 0.7rem;
-  font-size: 0.72rem;
-  border-width: 1px;
-}
-
-.server-control-view-logs {
-  padding: 0.25rem 0.6rem;
-  min-width: 0;
-  width: auto;
-  align-self: flex-start;
+.btn:hover:not(:disabled) {
+  background: var(--bg-active);
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #d4a234 0%, #a67d1a 100%);
-  color: #0a0604;
-  border-color: #d4a234;
-  box-shadow: 0 4px 15px rgba(212, 162, 52, 0.4);
+  color: #1a1406;
+  background: linear-gradient(180deg, #dfc05c 0%, #c49a3c 100%);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffd700 0%, #d4a234 100%);
-  box-shadow: 0 6px 20px rgba(212, 162, 52, 0.6);
-  transform: translateY(-2px);
+  filter: brightness(1.06);
+  background: linear-gradient(180deg, #dfc05c 0%, #c49a3c 100%);
 }
 
 .btn-secondary {
-  background: transparent;
-  color: #d4a234;
-  border-color: rgba(212, 162, 52, 0.6);
+  color: var(--accent-text);
+  background: var(--accent-dim);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(212, 162, 52, 0.15);
-  border-color: #d4a234;
-  box-shadow: 0 4px 15px rgba(212, 162, 52, 0.3);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  background: rgba(201, 168, 76, 0.22);
 }
 
 .btn-danger {
-  background: rgba(180, 50, 50, 0.2);
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  color: #ffc1c1;
+  background: rgba(188, 63, 63, 0.18);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: rgba(180, 50, 50, 0.3);
-  border-color: #e74c3c;
+  background: rgba(188, 63, 63, 0.28);
 }
+
+.btn-compact {
+  padding: 6px 10px;
+  font-size: 0.7rem;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Utilities ─── */
 
 .loading-spinner {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(212, 162, 52, 0.3);
-  border-top-color: #d4a234;
-  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.65);
+  border-radius: 999px;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.button-group {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
+/* ─── Forms ─── */
 
-/* ============================================================================
-   9. FORM SYSTEM
-   Form inputs, labels, and validation styles
-   ============================================================================ */
-
-/* Form Styles */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 14px;
 }
 
 .form-label {
   display: block;
-  font-family: 'Cinzel', serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #d4a234;
-  margin-bottom: 0.5rem;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
 }
 
 .form-input,
 .form-select {
   width: 100%;
-  padding: 0.75rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.95rem;
-  color: #d4a234;
-  background: rgba(26, 14, 8, 0.8);
-  border: 2px solid rgba(212, 162, 52, 0.3);
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  padding: 9px 10px;
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  font-family: inherit;
+  font-size: 0.82rem;
 }
 
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #d4a234;
-  box-shadow: 0 0 15px rgba(212, 162, 52, 0.2);
-}
-
-.form-input::placeholder {
-  color: rgba(184, 153, 104, 0.5);
+  border-color: rgba(201, 168, 76, 0.5);
 }
 
 .form-help {
-  font-size: 0.85rem;
-  color: #b89968;
-  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  margin-top: 4px;
+}
+
+/* ─── Settings Tabs ─── */
+
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.settings-tab {
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.settings-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-tab.active {
+  background: var(--bg-active);
+  color: var(--accent-text);
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 1200px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .app-layout {
+    padding: 10px;
+  }
+
+  .app-body {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    width: 100%;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
 }

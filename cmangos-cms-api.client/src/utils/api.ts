@@ -1,5 +1,5 @@
 const API_BASE_URL = 'http://localhost:5023/api';
-const API_KEY = process.env.VITE_API_KEY;
+const API_KEY = import.meta.env.VITE_API_KEY || '9853040984598034508924350834589';
 
 type ApiErrorResponse = {
   error?: string;
@@ -42,11 +42,19 @@ const buildHeaders = (): Record<string, string> => {
 };
 
 const requestJson = async <T>(method: string, path: string, body?: unknown): Promise<T> => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: buildHeaders(),
-    body: body === undefined ? undefined : JSON.stringify(body)
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: buildHeaders(),
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(`Unable to reach API at ${API_BASE_URL}. Ensure the backend is running.`);
+    }
+    throw error;
+  }
 
   if (!response.ok) {
     let errorMessage = response.statusText;

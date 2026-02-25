@@ -75,6 +75,17 @@ const PatchNotes: React.FC = () => {
     return formatted.replace(/\n/g, '<br />');
   };
 
+  const getPreviewText = (body: string) => {
+    const plain = body
+      .replace(/[#>*`\-\[\]()]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!plain) {
+      return 'No description provided.';
+    }
+    return plain.length > 280 ? `${plain.slice(0, 280)}...` : plain;
+  };
+
   if (loading) {
     return (
       <div className="app-content">
@@ -113,11 +124,11 @@ const PatchNotes: React.FC = () => {
   return (
     <div className="app-content">
       <div className="view-header">
-        <h1 className="view-title">Patch Notes</h1>
-        <p className="view-subtitle">Latest updates and changes from GitHub</p>
+        <h1 className="view-title">Changelogs</h1>
+        <p className="view-subtitle">Latest updates and release notes from GitHub</p>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <button className="btn btn-secondary" onClick={loadPatchNotes}>
           Refresh
         </button>
@@ -130,30 +141,47 @@ const PatchNotes: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="card" style={{ marginBottom: 0 }}>
+          <div style={{
+            color: '#f6eac8',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            fontSize: '0.78rem',
+            fontWeight: 800,
+            marginBottom: '0.9rem'
+          }}>
+            Changelog Entries
+          </div>
+
           {releases.map((release) => (
-            <div key={release.id} className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+            <div
+              key={release.id}
+              style={{
+                padding: '0.95rem 0',
+                borderTop: '1px solid rgba(255,255,255,0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.4rem', gap: '0.8rem' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <h2 style={{ color: '#d4a234', margin: 0, fontSize: '1.5rem' }}>
+                    <h2 style={{ color: '#e8d39b', margin: 0, fontSize: '1.18rem', lineHeight: 1.2 }}>
                       {release.name || release.tag_name}
                     </h2>
                     {release.prerelease && (
                       <span style={{
-                        background: 'rgba(212, 162, 52, 0.2)',
-                        color: '#d4a234',
-                        padding: '0.25rem 0.5rem',
+                        background: 'rgba(225, 191, 107, 0.16)',
+                        color: '#e8d39b',
+                        padding: '0.2rem 0.45rem',
                         borderRadius: '4px',
-                        fontSize: '0.75rem',
+                        fontSize: '0.68rem',
                         fontWeight: 'bold',
-                        border: '1px solid rgba(212, 162, 52, 0.3)'
+                        border: '1px solid rgba(225, 191, 107, 0.3)'
                       }}>
                         PRE-RELEASE
                       </span>
                     )}
                   </div>
-                  <div style={{ color: '#b89968', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+                  <div style={{ color: '#9faac0', fontSize: '0.82rem', marginTop: '0.18rem' }}>
                     {formatDate(release.published_at)}
                   </div>
                 </div>
@@ -162,20 +190,28 @@ const PatchNotes: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-secondary"
-                  style={{ fontSize: '0.85rem' }}
+                  style={{ fontSize: '0.72rem', padding: '0.45rem 0.65rem' }}
                 >
-                  View on GitHub →
+                  Open
                 </a>
               </div>
 
-              <div
-                style={{
-                  color: '#b89968',
-                  lineHeight: '1.8',
-                  fontSize: '0.95rem'
-                }}
-                dangerouslySetInnerHTML={{ __html: formatBody(release.body || 'No description provided.') }}
-              />
+              <p style={{ color: '#c7d3ea', lineHeight: 1.6, fontSize: '0.9rem', margin: 0 }}>
+                {getPreviewText(release.body || '')}
+              </p>
+
+              <details style={{ marginTop: '0.55rem' }}>
+                <summary style={{ color: '#9eb4dc', cursor: 'pointer', fontSize: '0.82rem' }}>View full notes</summary>
+                <div
+                  style={{
+                    color: '#b8c5de',
+                    lineHeight: '1.75',
+                    fontSize: '0.88rem',
+                    marginTop: '0.5rem'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formatBody(release.body || 'No description provided.') }}
+                />
+              </details>
             </div>
           ))}
         </div>

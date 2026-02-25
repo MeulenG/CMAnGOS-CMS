@@ -1,21 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { GameAccount } from '../types/app.types';
+import { deleteJson, getJson, patchJson, postJson } from '../utils/api';
 import '../components/AppLayout.css';
 
+interface AccountAction {
+  type: 'mute' | 'lock' | 'unlock' | 'gmlevel' | 'delete';
+  account: GameAccount;
+}
+
 const AccountManager: React.FC = () => {
-  const [accounts] = useState<GameAccount[]>([]);
+  const [accounts, setAccounts] = useState<GameAccount[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAccount, setNewAccount] = useState({ username: '', password: '', email: '' });
   const [creating, setCreating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [accountsPerPage] = useState(10);
+  const [actionModal, setActionModal] = useState<AccountAction | null>(null);
+  const [gmLevel, setGmLevel] = useState(0);
+  const [muteHours, setMuteHours] = useState(24);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && actionModal) {
+        setActionModal(null);
+      }
+    };
+    
+    if (actionModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [actionModal]);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  useEffect(() => {
+    if (actionModal) {
+      if (actionModal.type === 'gmlevel') {
+        setGmLevel(actionModal.account.gmlevel);
+      }
+      if (actionModal.type === 'mute') {
+        setMuteHours(24);
+      }
+    }
+  }, [actionModal]);
+
+  const fetchAccounts = async () => {
+    setLoading(true);
+    try {
+      const data = await getJson<GameAccount[]>('/Account?limit=1000');
+      setAccounts(data);
+    } catch (error) {
+      console.error('Failed to fetch accounts:', error);
+      alert('Failed to fetch accounts: ' + (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
 
     try {
-      // TODO: Implement account creation via backend API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      alert('Account creation will be implemented with backend API integration');
+      await postJson('/Account', {
+        username: newAccount.username,
+        password: newAccount.password,
+        email: newAccount.email || null
+      });
+
+      await fetchAccounts();
       setShowCreateForm(false);
       setNewAccount({ username: '', password: '', email: '' });
     } catch (error) {
@@ -25,6 +83,71 @@ const AccountManager: React.FC = () => {
       setCreating(false);
     }
   };
+
+  const handleDeleteAccount = async (id: number) => {
+    try {
+      await deleteJson(`/Account/${id}`);
+      await fetchAccounts();
+      setActionModal(null);
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      alert('Failed to delete account: ' + (error as Error).message);
+    }
+  };
+
+  const handleMuteAccount = async (id: number) => {
+    try {
+      await patchJson(`/Account/${id}/mute?durationSeconds=${muteHours * 3600}`);
+      await fetchAccounts();
+      setActionModal(null);
+    } catch (error) {
+      console.error('Failed to mute account:', error);
+      alert('An unexpected error occurred while muting the account. Please try again.');
+    }
+  };
+
+  const handleLockAccount = async (id: number) => {
+    try {
+      await patchJson(`/Account/${id}/lock`);
+      await fetchAccounts();
+      setActionModal(null);
+    } catch (error) {
+      console.error('Failed to lock account:', error);
+      window.alert('Failed to lock account due to a network or server error. Please try again.');
+    }
+  };
+
+  const handleUnlockAccount = async (id: number) => {
+    try {
+      await patchJson(`/Account/${id}/unlock`);
+      await fetchAccounts();
+      setActionModal(null);
+    } catch (error) {
+      console.error('Failed to unlock account:', error);
+      window.alert('An unexpected error occurred while unlocking the account.');
+    }
+  };
+
+  const handleChangeGmLevel = async (id: number) => {
+    try {
+      await patchJson(`/Account/${id}/gmlevel?gmlevel=${gmLevel}`);
+      await fetchAccounts();
+      setActionModal(null);
+    } catch (error) {
+      console.error('Failed to change GM level:', error);
+      window.alert('Failed to change GM level. Please try again.');
+    }
+  };
+
+  const filteredAccounts = accounts.filter(account =>
+    account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    account.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const indexOfLastAccount = currentPage * accountsPerPage;
+  const indexOfFirstAccount = indexOfLastAccount - accountsPerPage;
+  const currentAccounts = filteredAccounts.slice(indexOfFirstAccount, indexOfLastAccount);
+  const totalPages = Math.ceil(filteredAccounts.length / accountsPerPage);
 
   return (
     <div className="app-content">
@@ -36,25 +159,188 @@ const AccountManager: React.FC = () => {
       {!showCreateForm ? (
         <>
           <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div className="card-title" style={{ margin: 0 }}>Accounts</div>
-              <button className="btn btn-primary" onClick={() => setShowCreateForm(true)}>
-                + Create Account
-              </button>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Search accounts..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  style={{ width: '250px', margin: 0 }}
+                />
+                <button className="btn btn-primary" onClick={() => setShowCreateForm(true)}>
+                  + Create Account
+                </button>
+              </div>
             </div>
 
-            {accounts.length === 0 ? (
+            {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#b89968' }}>
-                <p style={{ fontSize: '1.1rem', margin: 0, opacity: 0.7 }}>No accounts configured</p>
+                <div className="loading-spinner" style={{ margin: '0 auto 1rem' }} />
+                <p>Loading accounts...</p>
+              </div>
+            ) : currentAccounts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#b89968' }}>
+                <p style={{ fontSize: '1.1rem', margin: 0, opacity: 0.7 }}>
+                  {searchTerm ? 'No accounts found' : 'No accounts configured'}
+                </p>
                 <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                  Create your first game account to get started
+                  {searchTerm ? 'Try a different search term' : 'Create your first game account to get started'}
                 </p>
               </div>
             ) : (
-              <div>
-                {/* Account list will go here */}
-                <p style={{ color: '#b89968' }}>Account list coming soon...</p>
-              </div>
+              <>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #2a2116', color: '#d4a234' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>ID</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>Username</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>Email</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>GM Level</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>Status</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>Join Date</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'center' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentAccounts.map(account => (
+                        <tr key={account.id} style={{ borderBottom: '1px solid #2a2116' }}>
+                          <td style={{ padding: '0.75rem', color: '#b89968' }}>{account.id}</td>
+                          <td style={{ padding: '0.75rem', color: '#d4a234', fontWeight: 500 }}>{account.username}</td>
+                          <td style={{ padding: '0.75rem', color: '#b89968', fontSize: '0.9rem' }}>{account.email || '-'}</td>
+                          <td style={{ padding: '0.75rem' }}>
+                            <span style={{
+                              color: account.gmlevel > 0 ? '#ff4444' : '#b89968',
+                              fontWeight: account.gmlevel > 0 ? 'bold' : 'normal'
+                            }}>
+                              {account.gmlevel > 0 ? `GM ${account.gmlevel}` : 'Player'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.75rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              {account.locked > 0 && (
+                                <span style={{
+                                  fontSize: '0.75rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '3px',
+                                  background: '#ff4444',
+                                  color: '#0a0603'
+                                }}>LOCKED</span>
+                              )}
+                              {account.mutetime > Date.now() / 1000 && (
+                                <span style={{
+                                  fontSize: '0.75rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '3px',
+                                  background: '#ff9944',
+                                  color: '#0a0603'
+                                }}>MUTED</span>
+                              )}
+                              {account.locked === 0 && account.mutetime <= Date.now() / 1000 && (
+                                <span style={{
+                                  fontSize: '0.75rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '3px',
+                                  background: '#44ff44',
+                                  color: '#0a0603'
+                                }}>ACTIVE</span>
+                              )}
+                            </div>
+                          </td>
+                          <td style={{ padding: '0.75rem', color: '#b89968', fontSize: '0.9rem' }}>
+                            {new Date(account.joindate).toLocaleDateString()}
+                          </td>
+                          <td style={{ padding: '0.75rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                onClick={() => setActionModal({ type: 'gmlevel', account })}
+                              >
+                                GM Level
+                              </button>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                onClick={() => setActionModal({ type: 'mute', account })}
+                              >
+                                Mute
+                              </button>
+                              {account.locked > 0 ? (
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  onClick={() => setActionModal({ type: 'unlock', account })}
+                                >
+                                  Unban
+                                </button>
+                              ) : (
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                                  onClick={() => setActionModal({ type: 'lock', account })}
+                                >
+                                  Ban
+                                </button>
+                              )}
+                              <button
+                                className="btn"
+                                style={{ 
+                                  padding: '0.25rem 0.5rem', 
+                                  fontSize: '0.8rem',
+                                  background: '#ff4444',
+                                  border: '1px solid #ff4444'
+                                }}
+                                onClick={() => setActionModal({ type: 'delete', account })}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {totalPages > 1 && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    gap: '0.5rem',
+                    marginTop: '1.5rem',
+                    paddingTop: '1rem',
+                    borderTop: '1px solid #2a2116'
+                  }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      style={{ padding: '0.5rem 1rem' }}
+                    >
+                      Previous
+                    </button>
+                    <span style={{ color: '#b89968', fontSize: '0.9rem' }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{ padding: '0.5rem 1rem' }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -148,6 +434,140 @@ const AccountManager: React.FC = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {actionModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(10, 6, 3, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+          onClick={() => setActionModal(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div 
+            className="card" 
+            style={{ maxWidth: '500px', width: '90%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="card-title" id="modal-title">
+              {actionModal.type === 'delete' && 'Delete Account'}
+              {actionModal.type === 'mute' && 'Mute Account'}
+              {actionModal.type === 'lock' && 'Ban Account'}
+              {actionModal.type === 'unlock' && 'Unban Account'}
+              {actionModal.type === 'gmlevel' && 'Change GM Level'}
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p style={{ color: '#b89968', marginBottom: '1rem' }}>
+                <strong style={{ color: '#d4a234' }}>Account:</strong> {actionModal.account.username}
+              </p>
+
+              {actionModal.type === 'delete' && (
+                <p style={{ color: '#ff4444', fontSize: '0.9rem' }}>
+                  Warning: This action cannot be undone. All characters and data associated with this account will be permanently deleted.
+                </p>
+              )}
+
+              {actionModal.type === 'mute' && (
+                <div>
+                  <p style={{ color: '#b89968', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                    Prevent this account from using chat channels.
+                  </p>
+                  <div className="form-group">
+                    <label className="form-label">Mute Duration (hours)</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={muteHours}
+                      onChange={(e) => setMuteHours(Number(e.target.value))}
+                      min={1}
+                      max={8760}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {actionModal.type === 'lock' && (
+                <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
+                  Ban this account to prevent login. This can be reversed later.
+                </p>
+              )}
+
+              {actionModal.type === 'unlock' && (
+                <p style={{ color: '#b89968', fontSize: '0.9rem' }}>
+                  Unban this account to allow the player to log in again.
+                </p>
+              )}
+
+              {actionModal.type === 'gmlevel' && (
+                <div>
+                  <p style={{ color: '#b89968', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                    Set the GM permission level for this account.
+                  </p>
+                  <div className="form-group">
+                    <label className="form-label">GM Level</label>
+                    <select
+                      className="form-input"
+                      value={gmLevel}
+                      onChange={(e) => setGmLevel(Number(e.target.value))}
+                    >
+                      <option value={0}>0 - Player</option>
+                      <option value={1}>1 - Moderator</option>
+                      <option value={2}>2 - Game Master</option>
+                      <option value={3}>3 - Administrator</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="button-group">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setActionModal(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                style={actionModal.type === 'delete' ? {
+                  background: '#ff4444',
+                  borderColor: '#ff4444'
+                } : {}}
+                onClick={() => {
+                  if (actionModal.type === 'delete') {
+                    handleDeleteAccount(actionModal.account.id);
+                  } else if (actionModal.type === 'mute') {
+                    handleMuteAccount(actionModal.account.id);
+                  } else if (actionModal.type === 'lock') {
+                    handleLockAccount(actionModal.account.id);
+                  } else if (actionModal.type === 'unlock') {
+                    handleUnlockAccount(actionModal.account.id);
+                  } else if (actionModal.type === 'gmlevel') {
+                    handleChangeGmLevel(actionModal.account.id);
+                  }
+                }}
+              >
+                {actionModal.type === 'delete' && 'Delete Account'}
+                {actionModal.type === 'mute' && 'Mute Account'}
+                {actionModal.type === 'lock' && 'Ban Account'}
+                {actionModal.type === 'unlock' && 'Unban Account'}
+                {actionModal.type === 'gmlevel' && 'Update GM Level'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -20,32 +20,47 @@ export const ExpansionLabels: Record<Expansion, string> = {
   [Expansion.WOTLK]: 'Wrath of the Lich King'
 };
 
-/**
- * Database configuration
- */
 export interface DatabaseConfig {
   host: string;
   port: number;
   username: string;
-  password: string; // Encrypted when stored
+  password: string;
+  passwordKey?: string; // Keychain reference for stored password
 }
 
-/**
- * Server profile with all configuration
- */
 export interface ServerProfile {
   id: string;
   name: string;
   expansion: Expansion;
   database: DatabaseConfig;
   wowPath: string;
+  realmdPath: string;
+  mangosdPath: string;
   createdAt: string;
   lastUsed: string;
 }
 
-/**
- * Application settings
- */
+export type ServerProcessName = 'realmd' | 'mangosd';
+
+export interface ServerProcessStatus {
+  name: ServerProcessName;
+  status: 'running' | 'stopped' | 'unknown';
+  pid?: number;
+  executablePath?: string;
+  startedByApp?: boolean;
+  error?: string;
+}
+
+export interface ServerLogOutput {
+  stdout: string;
+  stderr: string;
+}
+
+export interface ServerLogsSnapshot {
+  realmd: ServerLogOutput;
+  mangosd: ServerLogOutput;
+}
+
 export interface AppSettings {
   autoUpdate: boolean;
   launchOnStartup: boolean;
@@ -53,9 +68,6 @@ export interface AppSettings {
   checkUpdatesOnStartup: boolean;
 }
 
-/**
- * Complete application configuration
- */
 export interface AppConfig {
   version: string;
   activeProfileId: string | null;
@@ -64,23 +76,20 @@ export interface AppConfig {
   onboardingCompleted: boolean;
 }
 
-/**
- * Game account interface for account management
- */
 export interface GameAccount {
   id: number;
   username: string;
   email: string;
   joindate: string;
-  last_login: string;
+  last_login?: string;
   expansion: number;
   mutetime: number;
-  locale: number;
+  locale: string;
+  gmlevel: number;
+  locked: number;
 }
 
-/**
- * IPC operation result wrapper
- */
+
 export interface IPCResult<T = unknown> {
   success: boolean;
   data?: T;

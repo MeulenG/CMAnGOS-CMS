@@ -13,6 +13,8 @@ interface OnboardingData {
   expansion: Expansion | null;
   database: DatabaseFormData;
   wowPath: string;
+  realmdPath: string;
+  mangosdPath: string;
 }
 
 interface OnboardingContextType {
@@ -23,6 +25,8 @@ interface OnboardingContextType {
   updateExpansion: (expansion: Expansion) => void;
   updateDatabase: (database: DatabaseFormData) => void;
   updateWowPath: (path: string) => void;
+  updateRealmdPath: (path: string) => void;
+  updateMangosdPath: (path: string) => void;
   nextStep: () => void;
   previousStep: () => void;
   goToStep: (step: number) => void;
@@ -40,13 +44,15 @@ const INITIAL_DATA: OnboardingData = {
     username: 'root',
     password: ''
   },
-  wowPath: ''
+  wowPath: '',
+  realmdPath: '',
+  mangosdPath: ''
 };
 
 export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>(INITIAL_DATA);
-  const totalSteps = 5; // Welcome, Profile, Database, WoW Path, Summary
+  const totalSteps = 6; // Welcome, Profile, Database, WoW Path, Server Paths, Summary
 
   const updateProfileName = (name: string) => {
     setOnboardingData(prev => ({ ...prev, profileName: name }));
@@ -62,6 +68,14 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const updateWowPath = (path: string) => {
     setOnboardingData(prev => ({ ...prev, wowPath: path }));
+  };
+
+  const updateRealmdPath = (path: string) => {
+    setOnboardingData(prev => ({ ...prev, realmdPath: path }));
+  };
+
+  const updateMangosdPath = (path: string) => {
+    setOnboardingData(prev => ({ ...prev, mangosdPath: path }));
   };
 
   const nextStep = () => {
@@ -97,6 +111,8 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
         updateExpansion,
         updateDatabase,
         updateWowPath,
+        updateRealmdPath,
+        updateMangosdPath,
         nextStep,
         previousStep,
         goToStep,

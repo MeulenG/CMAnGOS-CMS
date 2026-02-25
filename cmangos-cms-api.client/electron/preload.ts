@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { ServerLogsSnapshot, ServerProcessStatus } from './types/config.types.js';
 
 console.log('========================================');
 console.log('PRELOAD SCRIPT IS RUNNING');
@@ -14,6 +15,15 @@ const IPC_CHANNELS = {
   PROFILE_UPDATE: 'profile:update',
   PROFILE_DELETE: 'profile:delete',
   PROFILE_GET_ALL: 'profile:get-all',
+  PROFILE_UPDATE_PASSWORD: 'profile:update-password',
+  PROFILE_CLEAR_PASSWORD: 'profile:clear-password',
+  WOW_LAUNCH: 'wow:launch',
+  SERVER_STATUS: 'server:status',
+  SERVER_START: 'server:start',
+  SERVER_STOP: 'server:stop',
+  SERVER_RESTART: 'server:restart',
+  SERVER_VALIDATE_PATHS: 'server:validate-paths',
+  SERVER_LOGS_READ: 'server:logs-read',
 } as const;
 
 // Type-safe IPC API with generic result types
@@ -41,6 +51,23 @@ export interface ElectronAPI {
     create: (profileData: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
     update: (id: string, updates: Record<string, unknown>) => Promise<IPCResult<Record<string, unknown>>>;
     delete: (id: string) => Promise<IPCResult<void>>;
+    updatePassword: (id: string, newPassword: string) => Promise<IPCResult<void>>;
+    clearPassword: (id: string) => Promise<IPCResult<void>>;
+  };
+
+  // WoW operations
+  wow: {
+    launch: (wowPath: string) => Promise<IPCResult<{ executablePath: string }>>;
+  };
+
+  // Server operations
+  server: {
+    status: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    start: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    stop: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    restart: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) => Promise<IPCResult<ServerProcessStatus[]>>;
+    validatePaths: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<{ realmdPath: string; mangosdPath: string }>>;
+    readLogs: (paths: { realmdPath: string; mangosdPath: string }) => Promise<IPCResult<ServerLogsSnapshot>>;
   };
 }
 
@@ -65,7 +92,30 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke(IPC_CHANNELS.PROFILE_CREATE, profileData),
     update: (id: string, updates: Record<string, unknown>) => 
       ipcRenderer.invoke(IPC_CHANNELS.PROFILE_UPDATE, id, updates),
-    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PROFILE_DELETE, id)
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PROFILE_DELETE, id),
+    updatePassword: (id: string, newPassword: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PROFILE_UPDATE_PASSWORD, id, newPassword),
+    clearPassword: (id: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PROFILE_CLEAR_PASSWORD, id)
+  },
+
+  wow: {
+    launch: (wowPath: string) => ipcRenderer.invoke(IPC_CHANNELS.WOW_LAUNCH, wowPath)
+  },
+
+  server: {
+    status: (paths: { realmdPath: string; mangosdPath: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SERVER_STATUS, paths),
+    start: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SERVER_START, paths),
+    stop: (paths: { realmdPath: string; mangosdPath: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SERVER_STOP, paths),
+    restart: (paths: { realmdPath: string; mangosdPath: string; showConsole?: boolean }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SERVER_RESTART, paths),
+    validatePaths: (paths: { realmdPath: string; mangosdPath: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SERVER_VALIDATE_PATHS, paths),
+    readLogs: (paths: { realmdPath: string; mangosdPath: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SERVER_LOGS_READ, paths)
   }
 } as ElectronAPI);
 

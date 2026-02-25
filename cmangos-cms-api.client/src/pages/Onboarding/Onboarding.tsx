@@ -4,6 +4,7 @@ import Welcome from './Welcome';
 import ProfileSetup from './ProfileSetup';
 import DatabaseConfig from './DatabaseConfig';
 import WowPathSelect from './WowPathSelect';
+import ServerBinaries from './ServerBinaries';
 import Summary from './Summary';
 import './Onboarding.css';
 
@@ -15,6 +16,7 @@ const OnboardingContent: React.FC = () => {
     <ProfileSetup key="profile" />,
     <DatabaseConfig key="database" />,
     <WowPathSelect key="wow-path" />,
+    <ServerBinaries key="server-binaries" />,
     <Summary key="summary" />
   ];
 

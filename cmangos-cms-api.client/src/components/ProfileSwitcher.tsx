@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { ServerProfile } from '../types/app.types';
 import { ExpansionLabels } from '../types/app.types';
+import { getJson, postJson } from '../utils/api';
 import './AppLayout.css';
 
-const ProfileSwitcher: React.FC = () => {
+interface ProfileSwitcherProps {
+  onAddProfile: () => void;
+}
+
+const ProfileSwitcher: React.FC<ProfileSwitcherProps> = ({ onAddProfile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [profiles, setProfiles] = useState<ServerProfile[]>([]);
   const [activeProfile, setActiveProfile] = useState<ServerProfile | null>(null);
@@ -15,18 +20,13 @@ const ProfileSwitcher: React.FC = () => {
 
   const loadProfiles = async () => {
     try {
-      const result = await window.electronAPI.profile.getAll();
-      if (result.success && result.data) {
-        setProfiles(result.data as unknown as ServerProfile[]);
-        
-        // Get active profile from config
-        const configResult = await window.electronAPI.config.get();
-        if (configResult.success && configResult.data) {
-          const activeProfileId = (configResult.data as { activeProfileId?: string | null }).activeProfileId;
-          const active = (result.data as unknown as ServerProfile[]).find(p => p.id === activeProfileId);
-          setActiveProfile(active || (result.data as unknown as ServerProfile[])[0] || null);
-        }
-      }
+      const loadedProfiles = await getJson<ServerProfile[]>('/profile');
+      setProfiles(loadedProfiles);
+
+      // Get active profile from config
+      const config = await getJson<{ activeProfileId: string | null }>('/config/active-profile');
+      const active = loadedProfiles.find(p => p.id === config.activeProfileId);
+      setActiveProfile(active || loadedProfiles[0] || null);
     } catch (error) {
       console.error('Failed to load profiles:', error);
     } finally {
@@ -39,10 +39,10 @@ const ProfileSwitcher: React.FC = () => {
     
     try {
       // Switch to selected profile
-      const result = await window.electronAPI.config.setActiveProfile(profileId);
-      if (result.success) {
-        await loadProfiles();
-      }
+      await postJson<{ activeProfileId: string | null }>('/config/active-profile', {
+        activeProfileId: profileId
+      });
+      await loadProfiles();
     } catch (error) {
       console.error('Failed to switch profile:', error);
     }
@@ -50,8 +50,7 @@ const ProfileSwitcher: React.FC = () => {
 
   const handleAddProfile = () => {
     setIsOpen(false);
-    // TODO: Open onboarding or profile creation modal
-    alert('Profile creation will be implemented');
+    onAddProfile();
   };
 
   if (loading) {

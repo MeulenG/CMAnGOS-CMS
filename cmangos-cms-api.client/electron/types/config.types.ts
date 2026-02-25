@@ -20,7 +20,8 @@ export interface DatabaseConfig {
   host: string;
   port: number;
   username: string;
-  password: string; // Encrypted when stored
+  password: string;
+  passwordKey?: string; // Keychain reference for stored password
 }
 
 export interface ServerProfile {
@@ -29,8 +30,31 @@ export interface ServerProfile {
   expansion: Expansion;
   database: DatabaseConfig;
   wowPath: string;
+  realmdPath: string;
+  mangosdPath: string;
   createdAt: string;
   lastUsed: string;
+}
+
+export type ServerProcessName = 'realmd' | 'mangosd';
+
+export interface ServerProcessStatus {
+  name: ServerProcessName;
+  status: 'running' | 'stopped' | 'unknown';
+  pid?: number;
+  executablePath?: string;
+  startedByApp?: boolean;
+  error?: string;
+}
+
+export interface ServerLogOutput {
+  stdout: string;
+  stderr: string;
+}
+
+export interface ServerLogsSnapshot {
+  realmd: ServerLogOutput;
+  mangosd: ServerLogOutput;
 }
 
 export interface AppSettings {
@@ -74,6 +98,8 @@ export const IPC_CHANNELS = {
   PROFILE_UPDATE: 'profile:update',
   PROFILE_DELETE: 'profile:delete',
   PROFILE_GET_ALL: 'profile:get-all',
+  PROFILE_UPDATE_PASSWORD: 'profile:update-password',
+  PROFILE_CLEAR_PASSWORD: 'profile:clear-password',
   
   // Database operations
   DATABASE_TEST_CONNECTION: 'database:test-connection',
@@ -83,6 +109,14 @@ export const IPC_CHANNELS = {
   WOW_VALIDATE_PATH: 'wow:validate-path',
   WOW_LAUNCH: 'wow:launch',
   WOW_BROWSE_PATH: 'wow:browse-path',
+
+  // Server process operations
+  SERVER_STATUS: 'server:status',
+  SERVER_START: 'server:start',
+  SERVER_STOP: 'server:stop',
+  SERVER_RESTART: 'server:restart',
+  SERVER_VALIDATE_PATHS: 'server:validate-paths',
+  SERVER_LOGS_READ: 'server:logs-read',
   
   // Update operations
   UPDATE_CHECK: 'update:check',
